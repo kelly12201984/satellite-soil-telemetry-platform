@@ -1,4 +1,4 @@
-# Satellite Soil Telemetry Platform
+﻿# Satellite Soil Telemetry Platform
 
 Multi-tenant IoT platform processing satellite telemetry from Globalstar SmartOne C devices for real-time soil monitoring. Features a full-stack dashboard with time-series analytics, device management, and automated alerting.
 
