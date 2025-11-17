@@ -1,0 +1,12 @@
+﻿fastapi
+uvicorn[standard]
+SQLAlchemy>=2
+psycopg[binary]
+alembic
+pydantic>=2
+pydantic-settings
+xmltodict
+redis
+python-dotenv
+psycopg2-binary>=2.9.9,<3.0
+
