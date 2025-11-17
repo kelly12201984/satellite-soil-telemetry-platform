@@ -1,0 +1,181 @@
+# BRSense — SmartOne C Delivery Spec (GLOBALSTAR)
+
+**Date:** 2025-11-01 (Updated: 2025-11-03)  
+**Status:** PRODUCTION (v1 API deployed, SSL certificates valid until Feb 1, 2026)
+
+This document contains only the parameters Globalstar needs to configure HTTPS delivery from SmartOne C to BRSense (Olho no Solo platform).
+
+---
+
+## 1. HTTPS Destination
+
+- **URL (Webhook Endpoint):** `https://api.soilreadings.com/v1/uplink/receive`
+- **Method:** `POST`
+- **Protocol:** `HTTPS` only (TLS enforced)
+
+---
+
+## 2. HTTP Headers
+
+- `Content-Type: application/json` _(preferred)_ or `application/xml`
+- `X-Uplink-Token: y7mlrffdn9XxPVR1SP9tt8iurW6XgZEfl4JpfcKv5eI=` _(required for authorization)_
+
+---
+
+## 3. Payload Schema
+
+### JSON (preferred)
+
+```json
+{
+  "esn": "0-5024242",
+  "device_name": "field-probe-1",
+  "message": {
+    "reading": {
+      "moisture": 12.3,
+      "temperature_c": 23.4
+    }
+  }
+}
+```
+
+### XML (supported)
+
+```xml
+<envelope>
+  <esn>0-5024242</esn>
+  <device_name>field-probe-1</device_name>
+  <message>
+    <reading>
+      <moisture>12.3</moisture>
+      <temperature_c>23.4</temperature_c>
+    </reading>
+  </message>
+</envelope>
+```
+
+### Globalstar Standard XML (also supported)
+
+For SmartOne C satellite payloads, we accept the standard Globalstar `stuMessages` envelope with hex-encoded payloads:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<stuMessages timeStamp="15/12/2016 21:00:00 GMT" messageID="abc123">
+  <stuMessage>
+    <esn>0-99990</esn>
+    <unixTime>1034268516</unixTime>
+    <gps>N</gps>
+    <payload length="9" source="pc" encoding="hex">0xC0560D72DA4AB2445A</payload>
+  </stuMessage>
+</stuMessages>
+```
+
+**Fields:**
+- `esn` _(string, required)_: Device ESN/IMEI/unique ID
+- `device_name` _(string, optional)_: Human friendly label
+- `message.reading.moisture` _(number, %)_
+- `message.reading.temperature_c` _(number, Celsius)_
+- Hex `payload` from satellite frames will be decoded and parsed automatically
+
+> Additional metrics (battery, RSSI/SNR, GPS, timestamps, etc.) may be included and will be accepted by the API without breaking.
+
+---
+
+## 4. Expected Responses
+
+- **200 OK** on success. Example body:
+
+```json
+{
+  "device_id": 1,
+  "message_id": 42,
+  "totals": {
+    "devices": 1,
+    "messages": 64,
+    "readings": 64
+  }
+}
+```
+
+- **401 Unauthorized**: missing/invalid `X-Uplink-Token`
+- **400 Bad Request**: malformed JSON/XML
+- **500 Internal Server Error**: transient server error (enable retries with backoff)
+
+---
+
+## 5. Retry Guidance
+
+- Enable retries on **5xx** with exponential backoff (recommended: 3 attempts)
+- Respect idempotency: the backend tolerates safe replays (duplicate messages are handled gracefully)
+
+---
+
+## 6. Throughput
+
+- **MVP scale:** up to a few requests/second
+- **Notify us before** higher rates if anticipating >10 req/s sustained
+
+---
+
+## 7. Security
+
+- Keep the token confidential. Rotation available upon request.
+- All traffic is encrypted via HTTPS/TLS
+- Token must be sent in every request header
+
+---
+
+## 8. Testing & Verification
+
+### Test Endpoint
+
+You can verify connectivity before going live:
+
+```bash
+curl -X POST https://api.soilreadings.com/v1/uplink/receive \
+  -H "Content-Type: application/json" \
+  -H "X-Uplink-Token: y7mlrffdn9XxPVR1SP9tt8iurW6XgZEfl4JpfcKv5eI=" \
+  -d '{
+    "esn": "TEST-001",
+    "message": {
+      "reading": {
+        "moisture": 15.5,
+        "temperature_c": 25.0
+      }
+    }
+  }'
+```
+
+Expected response: `{"device_id":X,"message_id":Y,"totals":{...}}`
+
+### Health Check
+
+```bash
+curl https://api.soilreadings.com/
+```
+
+Expected: `{"status":"running","env":"prod"}`
+
+---
+
+## 9. Data Access
+
+After successful ingestion, data is available via:
+
+- **API:** `GET /v1/readings/latest?limit=N` (at `https://api.soilreadings.com/v1/readings/latest`)
+- **Web UI:** `https://api.soilreadings.com/static/readings.html`
+
+---
+
+## Contact
+
+- **Platform:** BRSense Platform API (Olho no Solo)
+- **Deployment:** Fly.io (São Paulo region)
+- **Database:** Neon Postgres (AWS South America East)
+- **Version:** v1 (stable, backward-compatible)
+
+---
+
+**Document Version:** 1.0  
+**Last Updated:** 2025-11-01
+
