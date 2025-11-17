@@ -106,12 +106,23 @@ def _try_decode_hex(hex_payload: str) -> List[Dict[str, Any]]:
     except Exception:
         return []
 
-    # For now, decode_type0 handles GPS frames; soil decoder TBD
-    try:
-        decoded = smartone.decode_type0(raw)
-        # TODO: Add soil sensor decoder when frame format is known
-        # For now, return empty since these are GPS frames, not soil data
+    if len(raw) < 1:
         return []
+
+    # Check frame type and decode accordingly
+    frame_type = raw[0]
+
+    try:
+        if frame_type == 0x02:
+            # Type-2: Soil sensor data
+            return smartone.decode_type2_soil(raw)
+        elif frame_type == 0x00:
+            # Type-0: GPS location (not soil data)
+            decoded = smartone.decode_type0(raw)
+            return []  # GPS frames don't contain soil readings
+        else:
+            # Unknown frame type
+            return []
     except Exception:
         return []
 
@@ -165,9 +176,13 @@ def _normalize(payload: Dict[str, Any]) -> Dict[str, Any]:
         raw_text = raw_text[:8000]
 
     # Extract hex payload if present (from XML <payload> tag)
+    # xmltodict puts tag text in '#text' when attributes exist
     hex_payload = _get(payload, "payload", "hexPayload") or _find_key_ci(
         payload, "payload"
     )
+    # Handle xmltodict structure where payload is a dict with '#text'
+    if isinstance(hex_payload, dict) and "#text" in hex_payload:
+        hex_payload = hex_payload["#text"]
 
     # optional reading values
     moisture = _get(payload, "message.reading.moisture", "reading.moisture")
