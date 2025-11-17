@@ -1,0 +1,77 @@
+Delivered-To: charlesedwardbarrett@gmail.com
+Received: by 2002:a05:7022:2526:b0:f0:5af7:d0c4 with SMTP id ds38csp2867147dlb;
+        Sun, 16 Nov 2025 09:45:25 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IFvlua9jeg3f3LvR4c33brIa1lSC+zX6f/EE+Vj+SFUP2QvgVZCGa0jfNbXTUayO5jjHsAf
+X-Received: by 2002:a05:690e:4183:b0:642:1d3:ade7 with SMTP id 956f58d0204a3-64201d3b3bemr1669401d50.35.1763315124862;
+        Sun, 16 Nov 2025 09:45:24 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1763315124; cv=none;
+        d=google.com; s=arc-20240605;
+        b=MEcD+0ABRxmB8UtSpbnTGql7u3qmTLo/wiiGBFN71nOxvX88RFetIi/a6R3GjRQSAZ
+         CJlq3ryhCNhawenMO5jUEkCfyg3EnwqOitn0mCic2nhX9k/E2o0w+onXfp80X7EMv6A0
+         nspC68XnbiWO2i7zrVuTcMvl5EdlI5Rz+lAFRmNG4IpHhP1CynVKDdEO+dz0djA6bg/o
+         lRZuLEYXhb9fstwCKOHY4OgAcSZR8zT25kjOvAdWasyZ3FLEvF4bxypHOaazZiY5piwM
+         wBivq4JyaupjndqP2QBrkAzu2l4b8wgnKLK+MBeW63P06jQ/JTMdsiVWansCSxyzpKDJ
+         h4kQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=mime-version:subject:message-id:to:from:dkim-signature:dkim-filter
+         :date;
+        bh=8SLd84T82Q+zYVjYsPkNMNz8pmjMnYVBkUvaMgPQ7EQ=;
+        fh=CNgLW2nU1oqE/mm8yHC25srUzaIwiE0dSg83tDjy01Q=;
+        b=IOv6KCjU5r50asWCiQMcCrRTbHqDLmp5Mhv9f6iXVT3jBz2RB20yOLeacNTBUBk7Zv
+         8gC3natLbfI5bQQJ0bjQjGK09NYWTE1W72P2KRoYqnymTYd7n84DuCVyOufJcJFTmknU
+         oupqjz2kcg+VgtqgayZ5eWvfoEBctm8YBRGkINHVXjRla8g7X3S2vXGb5q2lZzpHSAAD
+         4TB2AAUSdxHwqvmRhxyziTkWG75m0eIFhCTkbe6BqZZuiChsp/W0MEaTM7P9uEm9Ge0z
+         J8OuaK2ox1sKwGVFzCiddiHR8zPkjjIgGkPIKmsyQWgxZN+BMGtMpnQQ9qBJNJxc/YeY
+         b9Yg==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@globalstar.com header.s=gstar header.b=bwfDHQNh;
+       spf=pass (google.com: domain of simplex@globalstar.com designates 206.220.220.114 as permitted sender) smtp.mailfrom=simplex@globalstar.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=globalstar.com
+Return-Path: <simplex@globalstar.com>
+Received: from smtpd-mlp.globalstar.com (mlpupvzftp01.globalstar.com. [206.220.220.114])
+        by mx.google.com with ESMTPS id 00721157ae682-78929632b0dsi39363147b3.388.2025.11.16.09.45.24
+        for <charlesedwardbarrett@gmail.com>
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Sun, 16 Nov 2025 09:45:24 -0800 (PST)
+Received-SPF: pass (google.com: domain of simplex@globalstar.com designates 206.220.220.114 as permitted sender) client-ip=206.220.220.114;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@globalstar.com header.s=gstar header.b=bwfDHQNh;
+       spf=pass (google.com: domain of simplex@globalstar.com designates 206.220.220.114 as permitted sender) smtp.mailfrom=simplex@globalstar.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=globalstar.com
+Date: Sun, 16 Nov 2025 09:45:24 -0800 (PST)
+Received: from nvaupvsimplex01.prod.aws.globalstar.com (unknown [10.248.64.115])
+	by smtpd-mlp.globalstar.com (Postfix) with ESMTP id CC2F41863F2F
+	for <charlesedwardbarrett@gmail.com>; Sun, 16 Nov 2025 17:45:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtpd-mlp.globalstar.com CC2F41863F2F
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=globalstar.com;
+	s=gstar; t=1763315123;
+	bh=8SLd84T82Q+zYVjYsPkNMNz8pmjMnYVBkUvaMgPQ7EQ=;
+	h=From:To:Subject:From;
+	b=bwfDHQNhr71vzVvOfAhKByUGlTCJ6NBVBNKPLld9CbBF6D7otH6uBU3aqTvRMWiy6
+	 2futlLyrzwrJ05l+8KBXfNwYs0uz7praI/2vG/cwSGXFM2AQrPzVutDJshkYtksd7m
+	 vLiB3ERFoI6xmDrqitTb3o+8AT2UD2A6XATeBR+k=
+From: simplex@globalstar.com
+To: charlesedwardbarrett@gmail.com
+Message-ID: <383766673.515251763315122488.JavaMail.gstar@nvaupvsimplex01.prod.aws.globalstar.com>
+Subject: StuMessages_e20cf3209f3e100683e8d4db2c86080e
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_1170_1605215579.1763315122484"
+
+------=_Part_1170_1605215579.1763315122484
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+<?xml version="1.0" encoding="UTF-8"?>
+<stuMessages xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://cody.glpconnect.com/XSD/StuMessage_Rev1_0_1.xsd" timeStamp="16/11/2025 17:45:22 GMT" messageID="e20cf3209f3e100683e8d4db2c86080e">
+<stuMessage>
+<esn>0-5024504</esn>
+<unixTime>1763315136</unixTime>
+<gps>N</gps>
+<payload length="9" source="pc" encoding="hex">0x021E1D1F1F1F1E545B</payload>
+</stuMessage>
+</stuMessages>
+
+------=_Part_1170_1605215579.1763315122484--
+
