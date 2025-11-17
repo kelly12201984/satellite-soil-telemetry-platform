@@ -1,0 +1,729 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Olho no Solo - Soil Monitoring</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    :root { 
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --primary: #2d8659;
+      --primary-dark: #1e5a3d;
+      --bg: #f5f7fa;
+      --card: white;
+      --text: #2c3e50;
+      --text-light: #7f8c8d;
+      --border: #e0e0e0;
+      --good: #27ae60;
+      --warning: #f39c12;
+      --danger: #e74c3c;
+    }
+    body { 
+      margin: 0; 
+      padding: 20px;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    
+    /* Header */
+    header { 
+      background: var(--card);
+      padding: 20px 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    h1 { margin: 0; font-size: 28px; color: var(--primary); }
+    .subtitle { color: var(--text-light); margin: 4px 0 0; font-size: 14px; }
+    
+    /* Filters */
+    .filters {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: end;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 150px;
+    }
+    .filter-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    select, input[type="number"] {
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      transition: border-color 0.2s;
+    }
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    button {
+      padding: 10px 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: var(--primary-dark); }
+    
+    /* Device Multi-select */
+    .device-checkboxes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .device-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: var(--bg);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .device-checkbox:hover { background: #e8ecef; }
+    .device-checkbox input[type="checkbox"] {
+      margin: 0;
+      cursor: pointer;
+    }
+    .device-checkbox.checked {
+      background: #e8f5e9;
+      border: 2px solid var(--primary);
+    }
+    
+    /* Key Metrics */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .metric-card {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .metric-label {
+      font-size: 12px;
+      color: var(--text-light);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .metric-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .metric-sub {
+      font-size: 14px;
+      color: var(--text-light);
+      margin-top: 4px;
+    }
+    
+    /* Charts Grid */
+    .charts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .chart-card {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .chart-card h3 {
+      margin: 0 0 16px;
+      font-size: 16px;
+      color: var(--text);
+    }
+    .chart-wrapper {
+      position: relative;
+      height: 300px;
+    }
+    
+    /* Status indicators */
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status.ok {
+      background: #e8f5e9;
+      color: var(--good);
+    }
+    .status.muted {
+      background: #f5f5f5;
+      color: var(--text-light);
+    }
+    
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    
+    /* Mobile */
+    @media (max-width: 768px) {
+      .filters { flex-direction: column; }
+      .charts { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🌱 Olho no Solo</h1>
+      <p class="subtitle">Soil Monitoring Dashboard</p>
+      <span id="ping" class="status muted">Checking connection...</span>
+    </header>
+
+    <div class="filters">
+      <div class="filter-group">
+        <label>Fields / Devices</label>
+        <div class="device-checkboxes" id="deviceCheckboxes">
+          <div class="loading">Loading devices...</div>
+        </div>
+      </div>
+      
+      <div class="filter-group">
+        <label>Soil Depth</label>
+        <select id="depthSelect">
+          <option value="">All Depths</option>
+          <option value="10">10 cm (Surface)</option>
+          <option value="30">30 cm (Shallow)</option>
+          <option value="60">60 cm (Medium)</option>
+          <option value="90">90 cm (Deep)</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Time Period</label>
+        <select id="timePeriod">
+          <option value="24h">24h</option>
+          <option value="7d" selected>7 days</option>
+          <option value="30d">30 days</option>
+          <option value="90d">90 days</option>
+          <option value="ytd">YTD</option>
+          <option value="custom">Custom…</option>
+        </select>
+      </div>
+      
+      <div class="filter-group" id="customDateRange" style="display: none;">
+        <label>From</label>
+        <input type="datetime-local" id="customFrom" />
+      </div>
+      
+      <div class="filter-group" id="customDateRangeTo" style="display: none;">
+        <label>To</label>
+        <input type="datetime-local" id="customTo" />
+      </div>
+      
+      <button id="refreshBtn">🔄 Refresh</button>
+    </div>
+
+    <div class="metrics" id="metrics">
+      <div class="metric-card">
+        <div class="metric-label">Average Moisture</div>
+        <div class="metric-value" id="avgMoisture">--</div>
+        <div class="metric-sub">%</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Average Temperature</div>
+        <div class="metric-value" id="avgTemp">--</div>
+        <div class="metric-sub">°C</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Active Sensors</div>
+        <div class="metric-value" id="activeSensors">--</div>
+        <div class="metric-sub">devices</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Latest Reading</div>
+        <div class="metric-value" id="latestTime" style="font-size: 18px;">--</div>
+        <div class="metric-sub" id="latestTimeAgo">--</div>
+      </div>
+    </div>
+
+    <div class="charts">
+      <div class="chart-card">
+        <h3>💧 Soil Moisture Over Time</h3>
+        <div class="chart-wrapper">
+          <canvas id="moistureChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="chart-card">
+        <h3>🌡️ Soil Temperature Over Time</h3>
+        <div class="chart-wrapper">
+          <canvas id="tempChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="chart-card">
+        <h3>📊 Moisture by Depth</h3>
+        <div class="chart-wrapper">
+          <canvas id="depthChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="chart-card">
+        <h3>📍 Field Comparison</h3>
+        <div class="chart-wrapper">
+          <canvas id="deviceChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = location.origin;
+    const charts = {};
+    let allDevices = [];
+    let selectedDevices = new Set();
+
+    // Initialize charts
+    function initCharts() {
+      const chartOpts = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true, position: 'top' },
+        },
+        scales: {
+          x: { display: true },
+          y: { display: true },
+        },
+      };
+
+      charts.moisture = new Chart(document.getElementById('moistureChart'), {
+        type: 'line',
+        data: { labels: [], datasets: [] },
+        options: { ...chartOpts, scales: { ...chartOpts.scales, y: { ...chartOpts.scales.y, title: { display: true, text: 'Moisture %' } } } },
+      });
+
+      charts.temp = new Chart(document.getElementById('tempChart'), {
+        type: 'line',
+        data: { labels: [], datasets: [] },
+        options: { ...chartOpts, scales: { ...chartOpts.scales, y: { ...chartOpts.scales.y, title: { display: true, text: 'Temperature °C' } } } },
+      });
+
+      charts.depth = new Chart(document.getElementById('depthChart'), {
+        type: 'bar',
+        data: { labels: [], datasets: [] },
+        options: { ...chartOpts, scales: { ...chartOpts.scales, y: { ...chartOpts.scales.y, title: { display: true, text: 'Moisture %' } } } },
+      });
+
+      charts.device = new Chart(document.getElementById('deviceChart'), {
+        type: 'bar',
+        data: { labels: [], datasets: [] },
+        options: { ...chartOpts, scales: { ...chartOpts.scales, y: { ...chartOpts.scales.y, title: { display: true, text: 'Moisture %' } } } },
+      });
+    }
+
+    // Load devices and populate checkboxes
+    async function loadDevices() {
+      try {
+        const r = await fetch(`${API_BASE}/v1/readings/latest?limit=500`);
+        const data = await r.json();
+        const items = Array.isArray(data.items) ? data.items : [];
+        
+        const deviceMap = new Map();
+        items.forEach(it => {
+          const key = it.device_id;
+          if (!deviceMap.has(key)) {
+            deviceMap.set(key, {
+              id: key,
+              name: it.device_name || it.esn || `Device ${key}`,
+              esn: it.esn,
+            });
+          }
+        });
+        
+        allDevices = Array.from(deviceMap.values());
+        
+        const container = document.getElementById('deviceCheckboxes');
+        container.innerHTML = '';
+        
+        allDevices.forEach(dev => {
+          const checkbox = document.createElement('div');
+          checkbox.className = 'device-checkbox';
+          checkbox.innerHTML = `
+            <input type="checkbox" id="dev-${dev.id}" value="${dev.id}" checked>
+            <label for="dev-${dev.id}">${dev.name}</label>
+          `;
+          checkbox.querySelector('input').addEventListener('change', updateSelectedDevices);
+          container.appendChild(checkbox);
+        });
+        
+        // Select all by default
+        updateSelectedDevices();
+      } catch (err) {
+        document.getElementById('deviceCheckboxes').innerHTML = '<div class="loading">Error loading devices</div>';
+      }
+    }
+
+    function updateSelectedDevices() {
+      selectedDevices.clear();
+      document.querySelectorAll('#deviceCheckboxes input[type="checkbox"]:checked').forEach(cb => {
+        selectedDevices.add(cb.value);
+      });
+      document.querySelectorAll('.device-checkbox').forEach(cb => {
+        if (cb.querySelector('input').checked) {
+          cb.classList.add('checked');
+        } else {
+          cb.classList.remove('checked');
+        }
+      });
+      loadData();
+    }
+
+    // Calculate time range from preset
+    function getTimeRange(preset) {
+      const now = new Date();
+      const start = new Date(now);
+      
+      if (preset === '24h') {
+        start.setHours(start.getHours() - 24);
+      } else if (preset === '7d') {
+        start.setDate(start.getDate() - 7);
+      } else if (preset === '30d') {
+        start.setDate(start.getDate() - 30);
+      } else if (preset === '90d') {
+        start.setDate(start.getDate() - 90);
+      } else if (preset === 'ytd') {
+        start.setMonth(0, 1);
+        start.setHours(0, 0, 0, 0);
+      } else if (preset === 'custom') {
+        const fromInput = document.getElementById('customFrom').value;
+        const toInput = document.getElementById('customTo').value;
+        if (fromInput && toInput) {
+          return {
+            from: new Date(fromInput),
+            to: new Date(toInput)
+          };
+        }
+        // Fallback if custom dates not set
+        start.setDate(start.getDate() - 7);
+      }
+      
+      return { from: start, to: now };
+    }
+
+    // Load and display data
+    async function loadData() {
+      const timePreset = document.getElementById('timePeriod').value || '7d';
+      const depthFilter = document.getElementById('depthSelect').value;
+      const timeRange = getTimeRange(timePreset);
+      
+      try {
+        // Use metrics API for better time range filtering
+        const fromISO = timeRange.from.toISOString();
+        const toISO = timeRange.to.toISOString();
+        const deviceIds = Array.from(selectedDevices);
+        
+        let url = `${API_BASE}/v1/metrics/moisture-series?from=${encodeURIComponent(fromISO)}&to=${encodeURIComponent(toISO)}`;
+        if (deviceIds.length > 0) {
+          deviceIds.forEach(id => url += `&device_ids[]=${id}`);
+        }
+        if (depthFilter) {
+          url += `&depths[]=${depthFilter}`;
+        }
+        
+        const r = await fetch(url);
+        const seriesData = await r.json();
+        
+        // Convert series data to flat items for charting
+        let items = [];
+        if (Array.isArray(seriesData)) {
+          seriesData.forEach(series => {
+            if (Array.isArray(series.points)) {
+              series.points.forEach(point => {
+                items.push({
+                  device_id: series.device_id,
+                  device_name: series.device_name,
+                  depth_cm: series.depth_cm,
+                  timestamp: point.t,
+                  moisture_pct: point.v,
+                  temperature_c: null, // Temp series is separate
+                });
+              });
+            }
+          });
+        }
+        
+        // Also get temperature if needed
+        if (!depthFilter || depthFilter === '') {
+          let tempUrl = `${API_BASE}/v1/metrics/temp-series?from=${encodeURIComponent(fromISO)}&to=${encodeURIComponent(toISO)}`;
+          if (deviceIds.length > 0) {
+            deviceIds.forEach(id => tempUrl += `&device_ids[]=${id}`);
+          }
+          try {
+            const tempR = await fetch(tempUrl);
+            const tempData = await tempR.json();
+            // Merge temp data into items
+            if (Array.isArray(tempData)) {
+              tempData.forEach(series => {
+                if (Array.isArray(series.points)) {
+                  series.points.forEach(point => {
+                    const existing = items.find(it => 
+                      it.device_id === series.device_id && 
+                      it.timestamp === point.t
+                    );
+                    if (existing) {
+                      existing.temperature_c = point.v;
+                    } else {
+                      items.push({
+                        device_id: series.device_id,
+                        device_name: series.device_name,
+                        depth_cm: 0, // Temp doesn't have depth
+                        timestamp: point.t,
+                        moisture_pct: null,
+                        temperature_c: point.v,
+                      });
+                    }
+                  });
+                }
+              });
+            }
+          } catch (e) {
+            console.warn('Could not load temperature data:', e);
+          }
+        }
+        
+        // Filter by time range (double-check)
+        items = items.filter(it => {
+          const ts = new Date(it.timestamp);
+          return ts >= timeRange.from && ts <= timeRange.to;
+        });
+        
+        // Sort by time
+        items.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+        // Update metrics
+        updateMetrics(items);
+        
+        // Update charts
+        updateCharts(items);
+        
+      } catch (err) {
+        console.error('Error loading data:', err);
+      }
+    }
+
+    function updateMetrics(items) {
+      if (items.length === 0) {
+        document.getElementById('avgMoisture').textContent = '--';
+        document.getElementById('avgTemp').textContent = '--';
+        document.getElementById('activeSensors').textContent = '--';
+        document.getElementById('latestTime').textContent = '--';
+        return;
+      }
+
+      const moistures = items.map(it => it.moisture_pct).filter(v => v != null);
+      const temps = items.map(it => it.temperature_c).filter(v => v != null);
+      const uniqueDevices = new Set(items.map(it => it.device_id)).size;
+      const latest = items[items.length - 1];
+
+      document.getElementById('avgMoisture').textContent = 
+        moistures.length > 0 ? (moistures.reduce((a, b) => a + b, 0) / moistures.length).toFixed(1) : '--';
+      document.getElementById('avgTemp').textContent = 
+        temps.length > 0 ? (temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1) : '--';
+      document.getElementById('activeSensors').textContent = uniqueDevices;
+
+      if (latest) {
+        const latestDate = new Date(latest.timestamp);
+        document.getElementById('latestTime').textContent = latestDate.toLocaleTimeString();
+        const minutesAgo = Math.floor((Date.now() - latestDate.getTime()) / 60000);
+        document.getElementById('latestTimeAgo').textContent = minutesAgo < 60 
+          ? `${minutesAgo} min ago` 
+          : `${Math.floor(minutesAgo / 60)} hours ago`;
+      }
+    }
+
+    function updateCharts(items) {
+      if (items.length === 0) return;
+
+      // Group by device + depth for time series
+      const series = {};
+      items.forEach(it => {
+        const key = `${it.device_id}-${it.depth_cm}`;
+        const deviceName = it.device_name || it.esn || `Device ${it.device_id}`;
+        if (!series[key]) {
+          series[key] = { device: deviceName, depth: it.depth_cm, points: [] };
+        }
+        series[key].points.push({
+          time: new Date(it.timestamp),
+          moisture: it.moisture_pct,
+          temp: it.temperature_c,
+        });
+      });
+
+      Object.values(series).forEach(s => {
+        s.points.sort((a, b) => a.time - b.time);
+      });
+
+      // Moisture chart
+      const colors = ['#2d8659', '#27ae60', '#f39c12', '#e74c3c', '#3498db', '#9b59b6'];
+      const moistureData = { labels: [], datasets: [] };
+      let colorIdx = 0;
+      Object.values(series).forEach(s => {
+        if (s.points.length > 0) {
+          moistureData.labels = s.points.map(p => p.time.toLocaleString());
+          moistureData.datasets.push({
+            label: `${s.device} @ ${s.depth}cm`,
+            data: s.points.map(p => p.moisture),
+            borderColor: colors[colorIdx % colors.length],
+            backgroundColor: colors[colorIdx % colors.length] + '40',
+            tension: 0.1,
+          });
+          colorIdx++;
+        }
+      });
+      charts.moisture.data = moistureData;
+      charts.moisture.update();
+
+      // Temperature chart
+      const tempData = { labels: [], datasets: [] };
+      colorIdx = 0;
+      Object.values(series).forEach(s => {
+        if (s.points.length > 0) {
+          tempData.labels = s.points.map(p => p.time.toLocaleString());
+          tempData.datasets.push({
+            label: `${s.device} @ ${s.depth}cm`,
+            data: s.points.map(p => p.temp),
+            borderColor: colors[colorIdx % colors.length],
+            backgroundColor: colors[colorIdx % colors.length] + '40',
+            tension: 0.1,
+          });
+          colorIdx++;
+        }
+      });
+      charts.temp.data = tempData;
+      charts.temp.update();
+
+      // Depth comparison (latest per depth)
+      const latestByDepth = {};
+      items.forEach(it => {
+        const depth = it.depth_cm;
+        if (!latestByDepth[depth] || new Date(it.timestamp) > new Date(latestByDepth[depth].timestamp)) {
+          latestByDepth[depth] = it;
+        }
+      });
+      charts.depth.data = {
+        labels: Object.keys(latestByDepth).sort((a, b) => a - b).map(d => `${d} cm`),
+        datasets: [{
+          label: 'Moisture %',
+          data: Object.keys(latestByDepth).sort((a, b) => a - b).map(d => latestByDepth[d].moisture_pct),
+          backgroundColor: '#2d865980',
+        }],
+      };
+      charts.depth.update();
+
+      // Device comparison (latest per device)
+      const latestByDevice = {};
+      items.forEach(it => {
+        const dev = it.device_name || it.esn || `Device ${it.device_id}`;
+        if (!latestByDevice[dev] || new Date(it.timestamp) > new Date(latestByDevice[dev].timestamp)) {
+          latestByDevice[dev] = it;
+        }
+      });
+      charts.device.data = {
+        labels: Object.keys(latestByDevice),
+        datasets: [{
+          label: 'Moisture %',
+          data: Object.values(latestByDevice).map(it => it.moisture_pct),
+          backgroundColor: '#27ae6080',
+        }],
+      };
+      charts.device.update();
+    }
+
+    // Health check
+    async function checkHealth() {
+      try {
+        const r = await fetch(`${API_BASE}/__debug/sql`);
+        const ping = document.getElementById('ping');
+        if (r.ok) {
+          ping.textContent = '✓ Connected';
+          ping.className = 'status ok';
+        } else {
+          throw new Error();
+        }
+      } catch (e) {
+        document.getElementById('ping').textContent = '✗ Connection issue';
+        document.getElementById('ping').className = 'status muted';
+      }
+    }
+
+    // Toggle custom date inputs
+    function toggleCustomDates() {
+      const preset = document.getElementById('timePeriod').value;
+      const isCustom = preset === 'custom';
+      document.getElementById('customDateRange').style.display = isCustom ? 'block' : 'none';
+      document.getElementById('customDateRangeTo').style.display = isCustom ? 'block' : 'none';
+      
+      if (isCustom && !document.getElementById('customFrom').value) {
+        // Set defaults for custom range
+        const now = new Date();
+        const weekAgo = new Date(now);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        document.getElementById('customFrom').value = weekAgo.toISOString().slice(0, 16);
+        document.getElementById('customTo').value = now.toISOString().slice(0, 16);
+      }
+      
+      if (isCustom) {
+        loadData();
+      }
+    }
+
+    // Event listeners
+    document.getElementById('refreshBtn').addEventListener('click', loadData);
+    document.getElementById('depthSelect').addEventListener('change', loadData);
+    document.getElementById('timePeriod').addEventListener('change', () => {
+      toggleCustomDates();
+      loadData();
+    });
+    document.getElementById('customFrom').addEventListener('change', loadData);
+    document.getElementById('customTo').addEventListener('change', loadData);
+
+    // Initialize
+    initCharts();
+    checkHealth();
+    toggleCustomDates(); // Set up custom date inputs
+    loadDevices().then(() => loadData());
+  </script>
+</body>
+</html>
