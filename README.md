@@ -164,6 +164,7 @@ curl http://localhost:8000/v1/devices
 
 ## 📚 Documentation
 
+- [Project Structure](./docs/PROJECT_STRUCTURE.md) - Explanation of repository organization
 - [Globalstar Integration Spec](./docs/GLOBALSTAR_DELIVERY_SPEC.md) - API specification for satellite device integration
 - [Deployment Checklist](./docs/DEPLOYMENT_CHECKLIST.md) - Step-by-step deployment guide
 - [Update Guide](./docs/UPDATE_GUIDE.md) - How to deploy updates and handle migrations
