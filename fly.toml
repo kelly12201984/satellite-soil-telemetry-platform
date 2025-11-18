@@ -2,7 +2,7 @@ app = 'soilprobe-api-floral-sound-9539'
 primary_region = 'gru'
 
 [build]
-  dockerfile = "api/Dockerfile"
+  dockerfile = "app/Dockerfile"
 
 [env]
   ENV = "prod"
