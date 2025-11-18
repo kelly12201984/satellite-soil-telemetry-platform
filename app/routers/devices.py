@@ -1,7 +1,7 @@
 # api/app/routers/devices.py
 from datetime import datetime, timedelta
 from typing import Optional, List
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 from api.app.db.session import get_db
@@ -9,7 +9,6 @@ from api.app.models import device as device_model
 from api.app.models import device_config as device_config_model
 from api.app.models import reading as reading_model
 from api.app.services.status import compute_device_status, severity_order
-from api.app.schemas.device import DeviceUpdate
 
 router = APIRouter(prefix="/v1/devices", tags=["devices"])
 
@@ -133,42 +132,6 @@ def devices_list(
             "last_seen": status_info["last_seen"],
             "battery_hint": status_info["battery_hint"],
         })
-
+    
     return result
-
-
-@router.patch("/{device_id}")
-def update_device(
-    device_id: int,
-    update_data: DeviceUpdate,
-    db: Session = Depends(get_db),
-):
-    """
-    Update device name and/or location.
-    """
-    device = db.query(device_model.Device).filter(device_model.Device.id == device_id).first()
-    if not device:
-        raise HTTPException(status_code=404, detail=f"Device {device_id} not found")
-
-    # Update fields if provided
-    if update_data.name is not None:
-        device.name = update_data.name
-    if update_data.location is not None:
-        device.location = update_data.location
-
-    # Update timestamp if model has it
-    if hasattr(device, 'updated_at'):
-        device.updated_at = datetime.utcnow()
-
-    db.add(device)
-    db.commit()
-    db.refresh(device)
-
-    return {
-        "id": device.id,
-        "esn": device.esn,
-        "name": device.name,
-        "location": getattr(device, 'location', None),
-        "updated_at": getattr(device, 'updated_at', datetime.utcnow()),
-    }
 

@@ -13,12 +13,6 @@ class DeviceCreate(DeviceBase):
     pass
 
 
-class DeviceUpdate(BaseModel):
-    """Schema for updating device name and/or location"""
-    name: str | None = None
-    location: str | None = None
-
-
 class DeviceRead(DeviceBase):
     id: int
     created_at: datetime
