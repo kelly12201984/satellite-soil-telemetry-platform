@@ -42,7 +42,7 @@ def decode_type2_soil(payload: bytes) -> list[dict]:
     [type=0x02][moisture1][moisture2][moisture3][moisture4][moisture5][moisture6][temp_high][temp_low/crc]
 
     Returns list of readings with depth_cm, moisture_pct, temperature_c
-    Depths are assumed: 10cm, 30cm, 60cm, 90cm (standard soil probe depths)
+    Depths: 10cm, 20cm, 30cm, 40cm, 50cm, 60cm (every 10cm from 10-60cm)
     """
     if len(payload) != 9:
         raise ValueError("SmartOne C Type-2 soil sensor expects 9 bytes")
@@ -55,26 +55,19 @@ def decode_type2_soil(payload: bytes) -> list[dict]:
 
     # Extract temperature (bytes 7-8)
     # Interpretation: byte 7 could be temp in C, byte 8 is checksum
-    # Or combined as a 16-bit value. Let's try byte 7 as temperature.
     temp_byte = payload[7]
-    # Common encoding: 0x54 = 84 decimal, but soil temp is usually 15-30C
-    # Let's interpret as: temp_c = temp_byte - 50 (offset encoding)
-    # Or it could be (temp_byte - 0x40) for a different offset
     # Based on 0x54 = 84, if we subtract 64 (0x40), we get 20C - reasonable!
     temperature_c = float(temp_byte - 0x40)  # Offset of 64 gives reasonable soil temps
 
-    # Map moisture readings to standard depths
-    # Using first 4 unique depths, or interpolating
-    depths_cm = [10.0, 30.0, 60.0, 90.0]
+    # Map moisture readings to depths: 10cm, 20cm, 30cm, 40cm, 50cm, 60cm
+    depths_cm = [10.0, 20.0, 30.0, 40.0, 50.0, 60.0]
 
     readings = []
-    # Take 4 readings at standard depths (using first 4 moisture values)
     for i, depth in enumerate(depths_cm):
-        if i < len(moisture_values):
-            readings.append({
-                "depth_cm": depth,
-                "moisture_pct": float(moisture_values[i]),
-                "temperature_c": temperature_c,
-            })
+        readings.append({
+            "depth_cm": depth,
+            "moisture_pct": float(moisture_values[i]),
+            "temperature_c": temperature_c,
+        })
 
     return readings
