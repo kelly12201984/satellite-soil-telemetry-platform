@@ -1,4 +1,4 @@
-# api/alembic/env.py
+# alembic/env.py
 from __future__ import annotations
 
 from logging.config import fileConfig
@@ -17,9 +17,9 @@ except (KeyError, NoSectionError, NoOptionError):
     pass
 
 # --- Load app settings and metadata ---
-from api.app.settings import settings  # type: ignore
-from api.app.db.base import Base       # type: ignore
-from api.app import models             # ensure models get imported/registered
+from app.settings import settings  # type: ignore
+from app.db.base import Base       # type: ignore
+from app import models             # ensure models get imported/registered
 
 target_metadata = Base.metadata
 
