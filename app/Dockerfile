@@ -6,10 +6,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-COPY api/requirements.txt /app/api/requirements.txt
-RUN python -m pip install --upgrade pip && pip install -r /app/api/requirements.txt
+COPY app/requirements.txt /app/app/requirements.txt
+RUN python -m pip install --upgrade pip && pip install -r /app/app/requirements.txt
 
 COPY . /app
 
 EXPOSE 8000
-CMD ["uvicorn", "api.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
