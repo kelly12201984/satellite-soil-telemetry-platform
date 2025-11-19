@@ -1,308 +1,426 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Olho no Solo - Soil Monitoring</title>
+  <title>BR-Sense - Soil Monitoring</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    * { box-sizing: border-box; }
-    :root { 
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      --primary: #2d8659;
-      --primary-dark: #1e5a3d;
-      --bg: #f5f7fa;
-      --card: white;
-      --text: #2c3e50;
-      --text-light: #7f8c8d;
-      --border: #e0e0e0;
-      --good: #27ae60;
-      --warning: #f39c12;
-      --danger: #e74c3c;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --primary: #0EA5E9;
+      --primary-hover: #0284C7;
+      --success: #22C55E;
+      --warning: #F59E0B;
+      --critical: #EF4444;
+      --stale: #64748B;
+      --bg: #F8FAFC;
+      --card: #FFFFFF;
+      --text: #1E293B;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --grid: #E5E7EB;
     }
-    body { 
-      margin: 0; 
-      padding: 20px;
-      background: var(--bg);
-      color: var(--text);
-    }
-    .container { max-width: 1400px; margin: 0 auto; }
-    
+    body { background: var(--bg); color: var(--text); padding: 16px 20px; }
+    .container { max-width: 1600px; margin: 0 auto; }
+
     /* Header */
-    header { 
+    header {
       background: var(--card);
-      padding: 20px 24px;
-      border-radius: 12px;
-      margin-bottom: 24px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    h1 { margin: 0; font-size: 28px; color: var(--primary); }
-    .subtitle { color: var(--text-light); margin: 4px 0 0; font-size: 14px; }
-    
-    /* Filters */
-    .filters {
-      background: var(--card);
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 24px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      align-items: end;
-    }
-    .filter-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 150px;
-    }
-    .filter-group label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-light);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    select, input[type="number"] {
-      padding: 10px 12px;
-      border: 2px solid var(--border);
+      padding: 16px 24px;
       border-radius: 8px;
-      font-size: 14px;
-      background: white;
-      transition: border-color 0.2s;
-    }
-    select:focus, input:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-    button {
-      padding: 10px 20px;
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    button:hover { background: var(--primary-dark); }
-    
-    /* Device Multi-select */
-    .device-checkboxes {
+      margin-bottom: 16px;
       display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 8px;
-    }
-    .device-checkbox {
-      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 6px;
-      padding: 8px 12px;
-      background: var(--bg);
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
-    .device-checkbox:hover { background: #e8ecef; }
-    .device-checkbox input[type="checkbox"] {
-      margin: 0;
-      cursor: pointer;
-    }
-    .device-checkbox.checked {
-      background: #e8f5e9;
-      border: 2px solid var(--primary);
-    }
-    
-    /* Key Metrics */
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .metric-card {
-      background: var(--card);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .metric-label {
-      font-size: 12px;
-      color: var(--text-light);
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-    .metric-value {
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--primary);
-    }
-    .metric-sub {
-      font-size: 14px;
-      color: var(--text-light);
-      margin-top: 4px;
-    }
-    
-    /* Charts Grid */
-    .charts {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-      gap: 20px;
-      margin-bottom: 24px;
-    }
-    .chart-card {
-      background: var(--card);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .chart-card h3 {
-      margin: 0 0 16px;
-      font-size: 16px;
-      color: var(--text);
-    }
-    .chart-wrapper {
-      position: relative;
-      height: 300px;
-    }
-    
-    /* Status indicators */
-    .status {
+    .logo-area { display: flex; align-items: center; gap: 12px; }
+    .logo { height: 28px; font-weight: 700; font-size: 24px; color: var(--primary); letter-spacing: -0.5px; }
+    .conn-pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 10px;
+      padding: 4px 12px;
+      background: #F0FDF4;
       border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--success);
     }
-    .status.ok {
-      background: #e8f5e9;
-      color: var(--good);
+    .conn-pill.offline { background: #FEF2F2; color: var(--critical); }
+
+    /* Controls - Single Row */
+    .controls {
+      background: var(--card);
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
-    .status.muted {
-      background: #f5f5f5;
-      color: var(--text-light);
+    .control-group { display: flex; flex-direction: column; gap: 6px; }
+    .control-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Device multiselect */
+    .device-list { display: flex; gap: 8px; flex-wrap: wrap; max-width: 400px; }
+    .device-item {
+      padding: 6px 12px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
     }
-    
-    /* Loading */
-    .loading {
+    .device-item:hover { border-color: var(--primary); }
+    .device-item.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    /* Depth chips */
+    .depth-chips { display: flex; gap: 6px; }
+    .chip {
+      padding: 6px 12px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .chip:hover { border-color: var(--primary); }
+    .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    /* Time presets */
+    .time-presets { display: flex; gap: 6px; }
+    .time-preset {
+      padding: 6px 12px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .time-preset:hover { border-color: var(--primary); }
+    .time-preset.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    /* Reset button */
+    .reset-btn {
+      padding: 6px 16px;
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+    .reset-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* Custom date inputs */
+    .date-input {
+      padding: 6px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      background: white;
+    }
+    .date-input:focus { outline: none; border-color: var(--primary); }
+
+    /* Map placeholder */
+    .map-placeholder {
+      background: var(--card);
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin-bottom: 16px;
       text-align: center;
-      padding: 40px;
-      color: var(--text-light);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 14px;
     }
-    
-    /* Mobile */
+    .map-placeholder a { color: var(--primary); text-decoration: none; font-size: 13px; }
+    .map-placeholder a:hover { text-decoration: underline; }
+
+    /* Summary cards */
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .summary-card {
+      background: var(--card);
+      padding: 16px 20px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .summary-card.clickable { cursor: pointer; transition: transform 0.15s; }
+    .summary-card.clickable:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .summary-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .summary-value { font-size: 32px; font-weight: 700; color: var(--text); line-height: 1; }
+    .summary-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    /* Main layout - charts + alerts */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    /* Charts */
+    .charts { display: flex; flex-direction: column; gap: 16px; }
+    .chart-card {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .chart-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 16px; }
+    .chart-wrapper { position: relative; height: 280px; }
+
+    /* Alerts panel */
+    .alerts-panel {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .alerts-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .alerts-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .alerts-info {
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: help;
+    }
+    .alert-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .alert-item:hover { background: var(--bg); }
+    .alert-item.selected { background: #EFF6FF; border: 1.5px solid var(--primary); }
+    .alert-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .alert-dot.critical { background: var(--critical); }
+    .alert-dot.warning { background: var(--warning); }
+    .alert-dot.ok { background: var(--success); }
+    .alert-dot.stale { background: var(--stale); }
+    .alert-dot.offline { background: #CBD5E1; }
+    .alert-content { flex: 1; min-width: 0; }
+    .alert-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .alert-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .battery-icon { font-size: 12px; opacity: 0.6; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state h3 { font-size: 16px; margin-bottom: 8px; }
+    .empty-state p { font-size: 13px; margin-bottom: 16px; }
+    .empty-btn {
+      padding: 8px 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .empty-btn:hover { background: var(--primary-hover); }
+
+    /* Error banner */
+    .error-banner {
+      background: #FEF2F2;
+      border-left: 4px solid var(--critical);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      border-radius: 4px;
+      display: none;
+    }
+    .error-banner.show { display: block; }
+    .error-banner-text { font-size: 13px; color: var(--critical); font-weight: 500; }
+    .error-retry { margin-left: 12px; color: var(--critical); text-decoration: underline; cursor: pointer; }
+
+    /* Mobile responsive */
+    @media (max-width: 1024px) {
+      .main-layout { grid-template-columns: 1fr; }
+      .alerts-panel { max-height: none; }
+    }
     @media (max-width: 768px) {
-      .filters { flex-direction: column; }
-      .charts { grid-template-columns: 1fr; }
-      .metrics { grid-template-columns: repeat(2, 1fr); }
+      .controls { flex-direction: column; align-items: stretch; }
+      .device-list, .depth-chips, .time-presets { max-width: 100%; }
+      .summary { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Error Banner -->
+    <div class="error-banner" id="errorBanner">
+      <span class="error-banner-text">Couldn't load data.</span>
+      <span class="error-retry" onclick="loadData()">Retry</span>
+    </div>
+
+    <!-- Header -->
     <header>
-      <h1>🌱 Olho no Solo</h1>
-      <p class="subtitle">Soil Monitoring Dashboard</p>
-      <span id="ping" class="status muted">Checking connection...</span>
+      <div class="logo-area">
+        <div class="logo">BR-Sense</div>
+      </div>
+      <div class="conn-pill" id="connStatus">
+        <span>●</span>
+        <span id="connText">Connecting...</span>
+      </div>
     </header>
 
-    <div class="filters">
-      <div class="filter-group">
-        <label>Fields / Devices</label>
-        <div class="device-checkboxes" id="deviceCheckboxes">
-          <div class="loading">Loading devices...</div>
+    <!-- Controls -->
+    <div class="controls">
+      <div class="control-group">
+        <div class="control-label">Devices</div>
+        <div class="device-list" id="deviceList">
+          <div class="device-item active" data-device="all">All devices</div>
         </div>
       </div>
-      
-      <div class="filter-group">
-        <label>Soil Depth</label>
-        <select id="depthSelect">
-          <option value="">All Depths</option>
-          <option value="10">10 cm (Surface)</option>
-          <option value="30">30 cm (Shallow)</option>
-          <option value="60">60 cm (Medium)</option>
-          <option value="90">90 cm (Deep)</option>
-        </select>
+
+      <div class="control-group">
+        <div class="control-label">Depth</div>
+        <div class="depth-chips" id="depthChips">
+          <div class="chip active" data-depth="all">All</div>
+          <div class="chip" data-depth="10">10cm</div>
+          <div class="chip" data-depth="20">20cm</div>
+          <div class="chip" data-depth="30">30cm</div>
+          <div class="chip" data-depth="40">40cm</div>
+          <div class="chip" data-depth="50">50cm</div>
+          <div class="chip" data-depth="60">60cm</div>
+        </div>
       </div>
-      
-      <div class="filter-group">
-        <label>Time Period</label>
-        <select id="timePeriod">
-          <option value="24h">24h</option>
-          <option value="7d" selected>7 days</option>
-          <option value="30d">30 days</option>
-          <option value="90d">90 days</option>
-          <option value="ytd">YTD</option>
-          <option value="custom">Custom…</option>
-        </select>
+
+      <div class="control-group">
+        <div class="control-label">Time Range</div>
+        <div class="time-presets" id="timePresets">
+          <div class="time-preset" data-range="24h">24h</div>
+          <div class="time-preset active" data-range="7d">7d</div>
+          <div class="time-preset" data-range="14d">14d</div>
+          <div class="time-preset" data-range="30d">30d</div>
+          <div class="time-preset" data-range="90d">90d</div>
+          <div class="time-preset" data-range="custom">Custom</div>
+        </div>
       </div>
-      
-      <div class="filter-group" id="customDateRange" style="display: none;">
-        <label>From</label>
-        <input type="datetime-local" id="customFrom" />
+
+      <div class="control-group" id="customDateGroup" style="display:none;">
+        <div class="control-label">From - To</div>
+        <div style="display:flex;gap:8px;">
+          <input type="date" class="date-input" id="customFrom" />
+          <input type="date" class="date-input" id="customTo" />
+        </div>
       </div>
-      
-      <div class="filter-group" id="customDateRangeTo" style="display: none;">
-        <label>To</label>
-        <input type="datetime-local" id="customTo" />
-      </div>
-      
-      <button id="refreshBtn">🔄 Refresh</button>
+
+      <button class="reset-btn" onclick="resetFilters()">↻ Reset</button>
     </div>
 
-    <div class="metrics" id="metrics">
-      <div class="metric-card">
-        <div class="metric-label">Average Moisture</div>
-        <div class="metric-value" id="avgMoisture">--</div>
-        <div class="metric-sub">%</div>
+    <!-- Map Placeholder -->
+    <div class="map-placeholder">
+      <span>No device locations yet.</span>
+      <a href="#">Add GPS later</a>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary">
+      <div class="summary-card clickable" onclick="scrollToAlerts()">
+        <div class="summary-label">Irrigation Alerts</div>
+        <div class="summary-value" id="alertCount">--</div>
+        <div class="summary-sub">devices need attention</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Average Temperature</div>
-        <div class="metric-value" id="avgTemp">--</div>
-        <div class="metric-sub">°C</div>
+      <div class="summary-card">
+        <div class="summary-label">Avg Moisture</div>
+        <div class="summary-value" id="avgMoisture">--</div>
+        <div class="summary-sub">%</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Active Sensors</div>
-        <div class="metric-value" id="activeSensors">--</div>
-        <div class="metric-sub">devices</div>
+      <div class="summary-card">
+        <div class="summary-label">Avg Temperature</div>
+        <div class="summary-value" id="avgTemp">--</div>
+        <div class="summary-sub">°C</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Latest Reading</div>
-        <div class="metric-value" id="latestTime" style="font-size: 18px;">--</div>
-        <div class="metric-sub" id="latestTimeAgo">--</div>
+      <div class="summary-card">
+        <div class="summary-label">Last Reading</div>
+        <div class="summary-value" id="lastReading" style="font-size:16px;">--</div>
+        <div class="summary-sub" id="lastReadingSub">--</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Active Devices</div>
+        <div class="summary-value" id="activeDevices">--</div>
+        <div class="summary-sub">connected</div>
       </div>
     </div>
 
-    <div class="charts">
-      <div class="chart-card">
-        <h3>💧 Soil Moisture Over Time</h3>
-        <div class="chart-wrapper">
-          <canvas id="moistureChart"></canvas>
+    <!-- Main Layout: Charts + Alerts -->
+    <div class="main-layout">
+      <div class="charts">
+        <div class="chart-card">
+          <div class="chart-title">Soil Moisture Over Time</div>
+          <div class="chart-wrapper">
+            <canvas id="moistureChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">Soil Temperature Over Time</div>
+          <div class="chart-wrapper">
+            <canvas id="tempChart"></canvas>
+          </div>
         </div>
       </div>
-      
-      <div class="chart-card">
-        <h3>🌡️ Soil Temperature Over Time</h3>
-        <div class="chart-wrapper">
-          <canvas id="tempChart"></canvas>
+
+      <div class="alerts-panel" id="alertsPanel">
+        <div class="alerts-header">
+          <div class="alerts-title">Irrigation Alerts</div>
+          <div class="alerts-info" title="Critical (Red) = Needs immediate irrigation&#10;Warning (Yellow) = Monitor closely&#10;OK (Green) = Optimal moisture&#10;Stale (Gray) = No recent data&#10;Offline = Not responding">ⓘ</div>
         </div>
-      </div>
-      
-      <div class="chart-card">
-        <h3>📊 Moisture by Depth</h3>
-        <div class="chart-wrapper">
-          <canvas id="depthChart"></canvas>
-        </div>
-      </div>
-      
-      <div class="chart-card">
-        <h3>📍 Field Comparison</h3>
-        <div class="chart-wrapper">
-          <canvas id="deviceChart"></canvas>
+        <div id="alertsList">
+          <div class="empty-state" style="padding:40px 20px;">
+            <p style="font-size:13px;">Loading devices...</p>
+          </div>
         </div>
       </div>
     </div>
@@ -312,418 +430,496 @@
     const API_BASE = location.origin;
     const charts = {};
     let allDevices = [];
-    let selectedDevices = new Set();
+    let selectedDevices = new Set(['all']);
+    let selectedDepth = 'all';
+    let selectedTimeRange = '7d';
+    let alertDevices = [];
 
-    // Initialize charts
+    // Chart.js default config
+    Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    Chart.defaults.font.size = 11;
+    Chart.defaults.color = '#64748B';
+
+    // Initialize charts with Nathan Yau style
     function initCharts() {
-      const chartOpts = {
+      const baseConfig = {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: { mode: 'nearest', intersect: false },
         plugins: {
-          legend: { display: true, position: 'top' },
+          legend: { display: false }, // Direct labeling instead
+          tooltip: {
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            padding: 10,
+            titleFont: { size: 12, weight: '600' },
+            bodyFont: { size: 11 },
+            cornerRadius: 4
+          }
         },
         scales: {
-          x: { display: true },
-          y: { display: true },
-        },
+          x: {
+            grid: { color: '#E5E7EB', lineWidth: 0.5 },
+            ticks: { maxRotation: 0, autoSkipPadding: 20 },
+            border: { display: false }
+          },
+          y: {
+            grid: { color: '#E5E7EB', lineWidth: 0.5 },
+            border: { display: false },
+            ticks: { padding: 8 }
+          }
+        }
       };
 
       charts.moisture = new Chart(document.getElementById('moistureChart'), {
         type: 'line',
         data: { labels: [], datasets: [] },
-        options: { ...chartOpts, scales: { ...chartOpts.scales, y: { ...chartOpts.scales.y, title: { display: true, text: 'Moisture %' } } } },
+        options: {
+          ...baseConfig,
+          scales: {
+            ...baseConfig.scales,
+            y: { ...baseConfig.scales.y, title: { display: true, text: 'Moisture (%)', font: { size: 11, weight: '600' } } }
+          }
+        }
       });
 
       charts.temp = new Chart(document.getElementById('tempChart'), {
         type: 'line',
         data: { labels: [], datasets: [] },
-        options: { ...chartOpts, scales: { ...chartOpts.scales, y: { ...chartOpts.scales.y, title: { display: true, text: 'Temperature °C' } } } },
-      });
-
-      charts.depth = new Chart(document.getElementById('depthChart'), {
-        type: 'bar',
-        data: { labels: [], datasets: [] },
-        options: { ...chartOpts, scales: { ...chartOpts.scales, y: { ...chartOpts.scales.y, title: { display: true, text: 'Moisture %' } } } },
-      });
-
-      charts.device = new Chart(document.getElementById('deviceChart'), {
-        type: 'bar',
-        data: { labels: [], datasets: [] },
-        options: { ...chartOpts, scales: { ...chartOpts.scales, y: { ...chartOpts.scales.y, title: { display: true, text: 'Moisture %' } } } },
+        options: {
+          ...baseConfig,
+          scales: {
+            ...baseConfig.scales,
+            y: { ...baseConfig.scales.y, title: { display: true, text: '°C', font: { size: 11, weight: '600' } } }
+          }
+        }
       });
     }
 
-    // Load devices and populate checkboxes
+    // Load devices and build UI
     async function loadDevices() {
       try {
-        const r = await fetch(`${API_BASE}/v1/readings/latest?limit=500`);
-        const data = await r.json();
-        const items = Array.isArray(data.items) ? data.items : [];
-        
-        const deviceMap = new Map();
-        items.forEach(it => {
-          const key = it.device_id;
-          if (!deviceMap.has(key)) {
-            deviceMap.set(key, {
-              id: key,
-              name: it.device_name || it.esn || `Device ${key}`,
-              esn: it.esn,
-            });
-          }
-        });
-        
-        allDevices = Array.from(deviceMap.values());
-        
-        const container = document.getElementById('deviceCheckboxes');
-        container.innerHTML = '';
-        
+        const r = await fetch(`${API_BASE}/v1/devices`);
+        if (!r.ok) throw new Error('Failed to load devices');
+
+        const devices = await r.json();
+        allDevices = Array.isArray(devices) ? devices : [];
+
+        const deviceList = document.getElementById('deviceList');
+        const allBtn = deviceList.querySelector('[data-device="all"]');
+
         allDevices.forEach(dev => {
-          const checkbox = document.createElement('div');
-          checkbox.className = 'device-checkbox';
-          checkbox.innerHTML = `
-            <input type="checkbox" id="dev-${dev.id}" value="${dev.id}" checked>
-            <label for="dev-${dev.id}">${dev.name}</label>
-          `;
-          checkbox.querySelector('input').addEventListener('change', updateSelectedDevices);
-          container.appendChild(checkbox);
+          const btn = document.createElement('div');
+          btn.className = 'device-item';
+          btn.dataset.device = dev.id;
+          btn.textContent = dev.alias || dev.esn || `Device ${dev.id}`;
+          btn.onclick = () => toggleDevice(dev.id);
+          deviceList.appendChild(btn);
         });
-        
-        // Select all by default
-        updateSelectedDevices();
+
+        // Load alerts
+        await loadAlerts();
+
       } catch (err) {
-        document.getElementById('deviceCheckboxes').innerHTML = '<div class="loading">Error loading devices</div>';
+        console.error('Error loading devices:', err);
+        showError();
       }
     }
 
-    function updateSelectedDevices() {
-      selectedDevices.clear();
-      document.querySelectorAll('#deviceCheckboxes input[type="checkbox"]:checked').forEach(cb => {
-        selectedDevices.add(cb.value);
-      });
-      document.querySelectorAll('.device-checkbox').forEach(cb => {
-        if (cb.querySelector('input').checked) {
-          cb.classList.add('checked');
-        } else {
-          cb.classList.remove('checked');
+    // Load irrigation alerts
+    async function loadAlerts() {
+      try {
+        const r = await fetch(`${API_BASE}/v1/devices/attention?limit=100`);
+        if (!r.ok) throw new Error('Failed to load alerts');
+
+        alertDevices = await r.json();
+
+        const alertsList = document.getElementById('alertsList');
+        const alertCount = document.getElementById('alertCount');
+
+        // Filter critical and warning only
+        const needsAttention = alertDevices.filter(d => d.status === 'red' || d.status === 'amber');
+        alertCount.textContent = needsAttention.length;
+
+        if (alertDevices.length === 0) {
+          alertsList.innerHTML = '<div class="empty-state" style="padding:40px 20px;"><p>No devices found</p></div>';
+          return;
         }
-      });
+
+        // Sort by severity
+        const severityOrder = { red: 1, amber: 2, green: 3, stale: 4, offline: 5 };
+        alertDevices.sort((a, b) => (severityOrder[a.status] || 99) - (severityOrder[b.status] || 99));
+
+        alertsList.innerHTML = '';
+        alertDevices.forEach(dev => {
+          const item = document.createElement('div');
+          item.className = 'alert-item';
+          item.dataset.deviceId = dev.device_id;
+          item.onclick = () => toggleDeviceFromAlert(dev.device_id);
+
+          const dotClass = dev.status === 'red' ? 'critical' : dev.status === 'amber' ? 'warning' : dev.status === 'green' ? 'ok' : dev.status === 'stale' ? 'stale' : 'offline';
+          const lastSeen = formatRelativeTime(dev.last_seen);
+
+          item.innerHTML = `
+            <div class="alert-dot ${dotClass}"></div>
+            <div class="alert-content">
+              <div class="alert-name">${dev.alias}</div>
+              <div class="alert-meta">
+                <span class="battery-icon">🔋</span>
+                Last reading ${lastSeen}
+              </div>
+            </div>
+          `;
+          alertsList.appendChild(item);
+        });
+
+      } catch (err) {
+        console.error('Error loading alerts:', err);
+      }
+    }
+
+    // Format relative time (fix negative time bug)
+    function formatRelativeTime(timestamp) {
+      if (!timestamp) return 'never';
+
+      const now = Date.now();
+      const then = new Date(timestamp).getTime();
+      const diffMs = now - then;
+
+      if (diffMs < 0) return 'just now'; // Fix negative time
+
+      const minutes = Math.floor(diffMs / 60000);
+      if (minutes < 1) return 'just now';
+      if (minutes < 60) return `${minutes}m ago`;
+
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+
+      const days = Math.floor(hours / 24);
+      return `${days}d ago`;
+    }
+
+    // Toggle device selection
+    function toggleDevice(deviceId) {
+      if (deviceId === 'all') {
+        selectedDevices.clear();
+        selectedDevices.add('all');
+      } else {
+        selectedDevices.delete('all');
+        if (selectedDevices.has(deviceId)) {
+          selectedDevices.delete(deviceId);
+        } else {
+          selectedDevices.add(deviceId);
+        }
+        if (selectedDevices.size === 0) {
+          selectedDevices.add('all');
+        }
+      }
+
+      updateDeviceUI();
+      saveFilters();
       loadData();
     }
 
-    // Calculate time range from preset
-    function getTimeRange(preset) {
-      const now = new Date();
-      const start = new Date(now);
-      
-      if (preset === '24h') {
-        start.setHours(start.getHours() - 24);
-      } else if (preset === '7d') {
-        start.setDate(start.getDate() - 7);
-      } else if (preset === '30d') {
-        start.setDate(start.getDate() - 30);
-      } else if (preset === '90d') {
-        start.setDate(start.getDate() - 90);
-      } else if (preset === 'ytd') {
-        start.setMonth(0, 1);
-        start.setHours(0, 0, 0, 0);
-      } else if (preset === 'custom') {
-        const fromInput = document.getElementById('customFrom').value;
-        const toInput = document.getElementById('customTo').value;
-        if (fromInput && toInput) {
-          return {
-            from: new Date(fromInput),
-            to: new Date(toInput)
-          };
+    // Toggle device from alert panel
+    function toggleDeviceFromAlert(deviceId) {
+      const item = document.querySelector(`.alert-item[data-device-id="${deviceId}"]`);
+      if (!item) return;
+
+      // Single-select mode from alerts
+      selectedDevices.clear();
+      selectedDevices.add(deviceId);
+
+      updateDeviceUI();
+      saveFilters();
+      loadData();
+    }
+
+    // Update device UI
+    function updateDeviceUI() {
+      document.querySelectorAll('.device-item').forEach(btn => {
+        if (selectedDevices.has(btn.dataset.device)) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
         }
-        // Fallback if custom dates not set
-        start.setDate(start.getDate() - 7);
+      });
+
+      document.querySelectorAll('.alert-item').forEach(item => {
+        if (selectedDevices.has(item.dataset.deviceId)) {
+          item.classList.add('selected');
+        } else {
+          item.classList.remove('selected');
+        }
+      });
+    }
+
+    // Depth chip selection
+    document.querySelectorAll('#depthChips .chip').forEach(chip => {
+      chip.onclick = () => {
+        selectedDepth = chip.dataset.depth;
+        document.querySelectorAll('#depthChips .chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        saveFilters();
+        loadData();
+      };
+    });
+
+    // Time preset selection
+    document.querySelectorAll('#timePresets .time-preset').forEach(preset => {
+      preset.onclick = () => {
+        selectedTimeRange = preset.dataset.range;
+        document.querySelectorAll('#timePresets .time-preset').forEach(p => p.classList.remove('active'));
+        preset.classList.add('active');
+
+        if (selectedTimeRange === 'custom') {
+          document.getElementById('customDateGroup').style.display = 'block';
+          const now = new Date();
+          const weekAgo = new Date(now);
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          document.getElementById('customFrom').valueAsDate = weekAgo;
+          document.getElementById('customTo').valueAsDate = now;
+        } else {
+          document.getElementById('customDateGroup').style.display = 'none';
+        }
+
+        saveFilters();
+        loadData();
+      };
+    });
+
+    // Custom date change
+    document.getElementById('customFrom').onchange = loadData;
+    document.getElementById('customTo').onchange = loadData;
+
+    // Reset filters
+    function resetFilters() {
+      selectedDevices.clear();
+      selectedDevices.add('all');
+      selectedDepth = 'all';
+      selectedTimeRange = '7d';
+
+      document.querySelectorAll('.device-item, .chip, .time-preset').forEach(el => el.classList.remove('active'));
+      document.querySelector('[data-device="all"]').classList.add('active');
+      document.querySelector('[data-depth="all"]').classList.add('active');
+      document.querySelector('[data-range="7d"]').classList.add('active');
+      document.getElementById('customDateGroup').style.display = 'none';
+
+      saveFilters();
+      loadData();
+    }
+
+    // Save filters to localStorage
+    function saveFilters() {
+      localStorage.setItem('br-sense-filters', JSON.stringify({
+        devices: Array.from(selectedDevices),
+        depth: selectedDepth,
+        timeRange: selectedTimeRange
+      }));
+    }
+
+    // Load filters from localStorage
+    function loadFilters() {
+      try {
+        const saved = localStorage.getItem('br-sense-filters');
+        if (saved) {
+          const filters = JSON.parse(saved);
+          selectedDevices = new Set(filters.devices || ['all']);
+          selectedDepth = filters.depth || 'all';
+          selectedTimeRange = filters.timeRange || '7d';
+
+          updateDeviceUI();
+          document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.depth === selectedDepth));
+          document.querySelectorAll('.time-preset').forEach(p => p.classList.toggle('active', p.dataset.range === selectedTimeRange));
+        }
+      } catch (e) {
+        console.error('Error loading filters:', e);
       }
-      
+    }
+
+    // Calculate time range
+    function getTimeRange() {
+      const now = new Date();
+      const start = new Date();
+
+      if (selectedTimeRange === '24h') {
+        start.setHours(start.getHours() - 24);
+      } else if (selectedTimeRange === '7d') {
+        start.setDate(start.getDate() - 7);
+      } else if (selectedTimeRange === '14d') {
+        start.setDate(start.getDate() - 14);
+      } else if (selectedTimeRange === '30d') {
+        start.setDate(start.getDate() - 30);
+      } else if (selectedTimeRange === '90d') {
+        start.setDate(start.getDate() - 90);
+      } else if (selectedTimeRange === 'custom') {
+        const from = document.getElementById('customFrom').value;
+        const to = document.getElementById('customTo').value;
+        if (from && to) {
+          return { from: new Date(from), to: new Date(to) };
+        }
+      }
+
       return { from: start, to: now };
     }
 
-    // Load and display data
+    // Load data
     async function loadData() {
-      const timePreset = document.getElementById('timePeriod').value || '7d';
-      const depthFilter = document.getElementById('depthSelect').value;
-      const timeRange = getTimeRange(timePreset);
-      
       try {
-        // Use metrics API for better time range filtering
+        hideError();
+
+        const timeRange = getTimeRange();
         const fromISO = timeRange.from.toISOString();
         const toISO = timeRange.to.toISOString();
-        const deviceIds = Array.from(selectedDevices);
-        
+
+        let deviceIds = Array.from(selectedDevices).filter(d => d !== 'all');
+        if (deviceIds.length === 0) deviceIds = allDevices.map(d => d.id);
+
+        // Build URL
         let url = `${API_BASE}/v1/metrics/moisture-series?from=${encodeURIComponent(fromISO)}&to=${encodeURIComponent(toISO)}`;
-        if (deviceIds.length > 0) {
-          deviceIds.forEach(id => url += `&device_ids[]=${id}`);
-        }
-        if (depthFilter) {
-          url += `&depths[]=${depthFilter}`;
-        }
-        
+        deviceIds.forEach(id => url += `&device_ids[]=${id}`);
+        if (selectedDepth !== 'all') url += `&depths[]=${selectedDepth}`;
+
         const r = await fetch(url);
-        const seriesData = await r.json();
-        
-        // Convert series data to flat items for charting
-        let items = [];
-        if (Array.isArray(seriesData)) {
-          seriesData.forEach(series => {
-            if (Array.isArray(series.points)) {
-              series.points.forEach(point => {
-                items.push({
-                  device_id: series.device_id,
-                  device_name: series.device_name,
-                  depth_cm: series.depth_cm,
-                  timestamp: point.t,
-                  moisture_pct: point.v,
-                  temperature_c: null, // Temp series is separate
-                });
-              });
-            }
-          });
-        }
-        
-        // Also get temperature if needed
-        if (!depthFilter || depthFilter === '') {
-          let tempUrl = `${API_BASE}/v1/metrics/temp-series?from=${encodeURIComponent(fromISO)}&to=${encodeURIComponent(toISO)}`;
-          if (deviceIds.length > 0) {
-            deviceIds.forEach(id => tempUrl += `&device_ids[]=${id}`);
-          }
-          try {
-            const tempR = await fetch(tempUrl);
-            const tempData = await tempR.json();
-            // Merge temp data into items
-            if (Array.isArray(tempData)) {
-              tempData.forEach(series => {
-                if (Array.isArray(series.points)) {
-                  series.points.forEach(point => {
-                    const existing = items.find(it => 
-                      it.device_id === series.device_id && 
-                      it.timestamp === point.t
-                    );
-                    if (existing) {
-                      existing.temperature_c = point.v;
-                    } else {
-                      items.push({
-                        device_id: series.device_id,
-                        device_name: series.device_name,
-                        depth_cm: 0, // Temp doesn't have depth
-                        timestamp: point.t,
-                        moisture_pct: null,
-                        temperature_c: point.v,
-                      });
-                    }
-                  });
-                }
-              });
-            }
-          } catch (e) {
-            console.warn('Could not load temperature data:', e);
-          }
-        }
-        
-        // Filter by time range (double-check)
-        items = items.filter(it => {
-          const ts = new Date(it.timestamp);
-          return ts >= timeRange.from && ts <= timeRange.to;
-        });
-        
-        // Sort by time
-        items.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        if (!r.ok) throw new Error('API error');
+
+        const series = await r.json();
 
         // Update metrics
-        updateMetrics(items);
-        
-        // Update charts
-        updateCharts(items);
-        
+        updateMetrics(series);
+
+        // Update charts with downsampling
+        updateCharts(series);
+
+        // Update connection status
+        updateConnStatus(true);
+
       } catch (err) {
         console.error('Error loading data:', err);
+        showError();
+        updateConnStatus(false);
       }
     }
 
-    function updateMetrics(items) {
-      if (items.length === 0) {
+    // Update metrics
+    function updateMetrics(series) {
+      if (!Array.isArray(series) || series.length === 0) {
         document.getElementById('avgMoisture').textContent = '--';
         document.getElementById('avgTemp').textContent = '--';
-        document.getElementById('activeSensors').textContent = '--';
-        document.getElementById('latestTime').textContent = '--';
+        document.getElementById('lastReading').textContent = '--';
+        document.getElementById('lastReadingSub').textContent = 'No data';
+        document.getElementById('activeDevices').textContent = '0';
         return;
       }
 
-      const moistures = items.map(it => it.moisture_pct).filter(v => v != null);
-      const temps = items.map(it => it.temperature_c).filter(v => v != null);
-      const uniqueDevices = new Set(items.map(it => it.device_id)).size;
-      const latest = items[items.length - 1];
+      let allValues = [];
+      let lastTimestamp = null;
+      const deviceSet = new Set();
 
-      document.getElementById('avgMoisture').textContent = 
-        moistures.length > 0 ? (moistures.reduce((a, b) => a + b, 0) / moistures.length).toFixed(1) : '--';
-      document.getElementById('avgTemp').textContent = 
-        temps.length > 0 ? (temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1) : '--';
-      document.getElementById('activeSensors').textContent = uniqueDevices;
+      series.forEach(s => {
+        deviceSet.add(s.device_id);
+        if (s.points && s.points.length > 0) {
+          allValues = allValues.concat(s.points.map(p => p.v));
+          const seriesLast = s.points[s.points.length - 1];
+          if (!lastTimestamp || new Date(seriesLast.t) > new Date(lastTimestamp)) {
+            lastTimestamp = seriesLast.t;
+          }
+        }
+      });
 
-      if (latest) {
-        const latestDate = new Date(latest.timestamp);
-        document.getElementById('latestTime').textContent = latestDate.toLocaleTimeString();
-        const minutesAgo = Math.floor((Date.now() - latestDate.getTime()) / 60000);
-        document.getElementById('latestTimeAgo').textContent = minutesAgo < 60 
-          ? `${minutesAgo} min ago` 
-          : `${Math.floor(minutesAgo / 60)} hours ago`;
+      const avgMoisture = allValues.length > 0
+        ? (allValues.reduce((a, b) => a + b, 0) / allValues.length).toFixed(1)
+        : '--';
+
+      document.getElementById('avgMoisture').textContent = avgMoisture;
+      document.getElementById('avgTemp').textContent = '--'; // TODO: Add temp series
+      document.getElementById('activeDevices').textContent = deviceSet.size;
+
+      if (lastTimestamp) {
+        const lastDate = new Date(lastTimestamp);
+        document.getElementById('lastReading').textContent = lastDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('lastReadingSub').textContent = formatRelativeTime(lastTimestamp);
       }
     }
 
-    function updateCharts(items) {
-      if (items.length === 0) return;
+    // Update charts with Nathan Yau style
+    function updateCharts(series) {
+      if (!Array.isArray(series) || series.length === 0) {
+        charts.moisture.data = { labels: [], datasets: [] };
+        charts.moisture.update();
+        return;
+      }
 
-      // Group by device + depth for time series
-      const series = {};
-      items.forEach(it => {
-        const key = `${it.device_id}-${it.depth_cm}`;
-        const deviceName = it.device_name || it.esn || `Device ${it.device_id}`;
-        if (!series[key]) {
-          series[key] = { device: deviceName, depth: it.depth_cm, points: [] };
-        }
-        series[key].points.push({
-          time: new Date(it.timestamp),
-          moisture: it.moisture_pct,
-          temp: it.temperature_c,
-        });
+      // Neutral colors for time series (not alert colors)
+      const lineColors = ['#0EA5E9', '#06B6D4', '#14B8A6', '#10B981', '#84CC16', '#EAB308'];
+
+      // Downsample to max 60 points per series
+      const downsampleSeries = (points, maxPoints = 60) => {
+        if (points.length <= maxPoints) return points;
+        const step = Math.ceil(points.length / maxPoints);
+        return points.filter((_, i) => i % step === 0);
+      };
+
+      const datasets = series.slice(0, 5).map((s, idx) => { // Limit to 5 series
+        const downsampled = downsampleSeries(s.points || []);
+        return {
+          label: `${s.device_name} @ ${s.depth_cm}cm`,
+          data: downsampled.map(p => ({ x: new Date(p.t), y: p.v })),
+          borderColor: lineColors[idx % lineColors.length],
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.1
+        };
       });
 
-      Object.values(series).forEach(s => {
-        s.points.sort((a, b) => a.time - b.time);
-      });
-
-      // Moisture chart
-      const colors = ['#2d8659', '#27ae60', '#f39c12', '#e74c3c', '#3498db', '#9b59b6'];
-      const moistureData = { labels: [], datasets: [] };
-      let colorIdx = 0;
-      Object.values(series).forEach(s => {
-        if (s.points.length > 0) {
-          moistureData.labels = s.points.map(p => p.time.toLocaleString());
-          moistureData.datasets.push({
-            label: `${s.device} @ ${s.depth}cm`,
-            data: s.points.map(p => p.moisture),
-            borderColor: colors[colorIdx % colors.length],
-            backgroundColor: colors[colorIdx % colors.length] + '40',
-            tension: 0.1,
-          });
-          colorIdx++;
-        }
-      });
-      charts.moisture.data = moistureData;
+      charts.moisture.data = { datasets };
+      charts.moisture.options.scales.x.type = 'time';
+      charts.moisture.options.scales.x.time = {
+        unit: selectedTimeRange === '24h' ? 'hour' : 'day',
+        displayFormats: { hour: 'HH:mm', day: 'MMM d' }
+      };
       charts.moisture.update();
-
-      // Temperature chart
-      const tempData = { labels: [], datasets: [] };
-      colorIdx = 0;
-      Object.values(series).forEach(s => {
-        if (s.points.length > 0) {
-          tempData.labels = s.points.map(p => p.time.toLocaleString());
-          tempData.datasets.push({
-            label: `${s.device} @ ${s.depth}cm`,
-            data: s.points.map(p => p.temp),
-            borderColor: colors[colorIdx % colors.length],
-            backgroundColor: colors[colorIdx % colors.length] + '40',
-            tension: 0.1,
-          });
-          colorIdx++;
-        }
-      });
-      charts.temp.data = tempData;
-      charts.temp.update();
-
-      // Depth comparison (latest per depth)
-      const latestByDepth = {};
-      items.forEach(it => {
-        const depth = it.depth_cm;
-        if (!latestByDepth[depth] || new Date(it.timestamp) > new Date(latestByDepth[depth].timestamp)) {
-          latestByDepth[depth] = it;
-        }
-      });
-      charts.depth.data = {
-        labels: Object.keys(latestByDepth).sort((a, b) => a - b).map(d => `${d} cm`),
-        datasets: [{
-          label: 'Moisture %',
-          data: Object.keys(latestByDepth).sort((a, b) => a - b).map(d => latestByDepth[d].moisture_pct),
-          backgroundColor: '#2d865980',
-        }],
-      };
-      charts.depth.update();
-
-      // Device comparison (latest per device)
-      const latestByDevice = {};
-      items.forEach(it => {
-        const dev = it.device_name || it.esn || `Device ${it.device_id}`;
-        if (!latestByDevice[dev] || new Date(it.timestamp) > new Date(latestByDevice[dev].timestamp)) {
-          latestByDevice[dev] = it;
-        }
-      });
-      charts.device.data = {
-        labels: Object.keys(latestByDevice),
-        datasets: [{
-          label: 'Moisture %',
-          data: Object.values(latestByDevice).map(it => it.moisture_pct),
-          backgroundColor: '#27ae6080',
-        }],
-      };
-      charts.device.update();
     }
 
-    // Health check
-    async function checkHealth() {
-      try {
-        const r = await fetch(`${API_BASE}/__debug/sql`);
-        const ping = document.getElementById('ping');
-        if (r.ok) {
-          ping.textContent = '✓ Connected';
-          ping.className = 'status ok';
-        } else {
-          throw new Error();
-        }
-      } catch (e) {
-        document.getElementById('ping').textContent = '✗ Connection issue';
-        document.getElementById('ping').className = 'status muted';
+    // Connection status
+    function updateConnStatus(connected) {
+      const pill = document.getElementById('connStatus');
+      const text = document.getElementById('connText');
+      if (connected) {
+        pill.className = 'conn-pill';
+        text.textContent = 'Connected • prod';
+      } else {
+        pill.className = 'conn-pill offline';
+        text.textContent = 'Offline';
       }
     }
 
-    // Toggle custom date inputs
-    function toggleCustomDates() {
-      const preset = document.getElementById('timePeriod').value;
-      const isCustom = preset === 'custom';
-      document.getElementById('customDateRange').style.display = isCustom ? 'block' : 'none';
-      document.getElementById('customDateRangeTo').style.display = isCustom ? 'block' : 'none';
-      
-      if (isCustom && !document.getElementById('customFrom').value) {
-        // Set defaults for custom range
-        const now = new Date();
-        const weekAgo = new Date(now);
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        document.getElementById('customFrom').value = weekAgo.toISOString().slice(0, 16);
-        document.getElementById('customTo').value = now.toISOString().slice(0, 16);
-      }
-      
-      if (isCustom) {
-        loadData();
-      }
+    // Error handling
+    function showError() {
+      document.getElementById('errorBanner').classList.add('show');
     }
 
-    // Event listeners
-    document.getElementById('refreshBtn').addEventListener('click', loadData);
-    document.getElementById('depthSelect').addEventListener('change', loadData);
-    document.getElementById('timePeriod').addEventListener('change', () => {
-      toggleCustomDates();
-      loadData();
-    });
-    document.getElementById('customFrom').addEventListener('change', loadData);
-    document.getElementById('customTo').addEventListener('change', loadData);
+    function hideError() {
+      document.getElementById('errorBanner').classList.remove('show');
+    }
+
+    // Scroll to alerts
+    function scrollToAlerts() {
+      document.getElementById('alertsPanel').scrollIntoView({ behavior: 'smooth' });
+    }
 
     // Initialize
     initCharts();
-    checkHealth();
-    toggleCustomDates(); // Set up custom date inputs
+    loadFilters();
     loadDevices().then(() => loadData());
+
+    // Health check
+    fetch(`${API_BASE}/`).then(r => r.json()).then(data => {
+      if (data.env) {
+        document.getElementById('connText').textContent = `Connected • ${data.env}`;
+      }
+    }).catch(() => {});
   </script>
 </body>
 </html>
