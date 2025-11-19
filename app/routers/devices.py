@@ -4,11 +4,11 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
-from api.app.db.session import get_db
-from api.app.models import device as device_model
-from api.app.models import device_config as device_config_model
-from api.app.models import reading as reading_model
-from api.app.services.status import compute_device_status, severity_order
+from app.db.session import get_db
+from app.models import device as device_model
+from app.models import device_config as device_config_model
+from app.models import reading as reading_model
+from app.services.status import compute_device_status, severity_order
 
 router = APIRouter(prefix="/v1/devices", tags=["devices"])
 

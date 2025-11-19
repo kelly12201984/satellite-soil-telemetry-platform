@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from sqlalchemy import Float, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from api.app.db.base import Base
+from app.db.base import Base
 
 
 class Reading(Base):

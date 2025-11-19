@@ -14,12 +14,12 @@ from fastapi.responses import FileResponse
 from starlette.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from api.app.settings import settings
-from api.app.routers import uplink
-from api.app.routers import readings as readings_router
-from api.app.routers import metrics
-from api.app.routers import devices
-from api.app.routers import constants
+from app.settings import settings
+from app.routers import uplink
+from app.routers import readings as readings_router
+from app.routers import metrics
+from app.routers import devices
+from app.routers import constants
 
 # ---------- Logging ----------
 logging.basicConfig(
@@ -97,7 +97,7 @@ async def debug_echo(request: Request):
 @app.get("/__debug/sql")
 def debug_sql():
     from sqlalchemy import text
-    from api.app.db.session import engine
+    from app.db.session import engine
     with engine.connect() as conn:
         val = conn.execute(text("select 1")).scalar_one()
     return {"db_ok": True, "select_1": val}

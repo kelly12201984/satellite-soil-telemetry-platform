@@ -12,8 +12,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
 from statistics import median
 
-from api.app.settings import settings
-from api.app.models import Device, DeviceConfig, Reading
+from app.settings import settings
+from app.models import Device, DeviceConfig, Reading
 
 
 StatusType = Literal["red", "amber", "green", "blue", "stale", "offline", "gray"]

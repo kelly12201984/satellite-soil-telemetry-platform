@@ -7,9 +7,9 @@ from typing import Any, Dict, List
 from sqlalchemy.orm import Session
 import xmltodict
 
-from api.app.models import device as device_model
-from api.app.models import message as message_model
-from api.app.models import reading as reading_model
+from app.models import device as device_model
+from app.models import message as message_model
+from app.models import reading as reading_model
 
 # --- Guarded deps ---
 try:
@@ -19,8 +19,8 @@ except Exception:
 
 # Optional decoder imports (guarded)
 try:
-    from api.app.decoders import smartone_c as smartone
-    from api.app.decoders import smartone_util as sutil
+    from app.decoders import smartone_c as smartone
+    from app.decoders import smartone_util as sutil
 except Exception:  # files exist in your tree; if they change, we still run
     smartone = None
     sutil = None
