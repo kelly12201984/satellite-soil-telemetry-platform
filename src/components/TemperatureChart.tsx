@@ -1,8 +1,8 @@
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { useTempSeries } from '@/api/hooks';
+import { TempSeries, useTempSeries } from '@/api/hooks';
 
 export function TemperatureChart({ q }: { q: any }) {
-  const { data, isLoading } = useTempSeries(q);
+  const { data = [], isLoading } = useTempSeries(q);
   
   if (isLoading) return <div className="h-80 flex items-center justify-center">Loading...</div>;
   if (!data || data.length === 0) return <div className="h-80 flex items-center justify-center text-gray-500">No data</div>;
@@ -12,7 +12,7 @@ export function TemperatureChart({ q }: { q: any }) {
   const seriesMeta: Array<{ key: string; color: string; device: string }> = [];
   const colors = ['#e74c3c', '#f39c12', '#3498db', '#9b59b6', '#1abc9c', '#e67e22', '#2d8659', '#27ae60'];
   
-  data.forEach((series: any, idx: number) => {
+  data.forEach((series: TempSeries, idx: number) => {
     const key = series.device_name;
     seriesMeta.push({
       key,
@@ -20,7 +20,7 @@ export function TemperatureChart({ q }: { q: any }) {
       device: series.device_name,
     });
     
-    series.points.forEach((point: any) => {
+    series.points.forEach((point) => {
       if (!timeMap.has(point.t)) {
         timeMap.set(point.t, { t: new Date(point.t).toLocaleString() });
       }

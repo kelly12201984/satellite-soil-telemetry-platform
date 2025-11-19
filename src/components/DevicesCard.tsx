@@ -1,8 +1,6 @@
-import { useAttention } from '@/api/hooks';
+import { AttentionDevice, DeviceStatus, useAttention } from '@/api/hooks';
 
-type Status = 'red' | 'amber' | 'green' | 'blue' | 'stale' | 'offline' | 'gray';
-
-function statusColor(s: Status): string {
+function statusColor(s: DeviceStatus): string {
   switch (s) {
     case 'red': return 'bg-red-500';
     case 'amber': return 'bg-amber-500';
@@ -49,7 +47,7 @@ function BatteryBars({ hint }: { hint: string }) {
 }
 
 export function DevicesCard({ onPick }: { onPick: (id: string) => void }) {
-  const { data, isLoading } = useAttention();
+  const { data = [], isLoading } = useAttention();
 
   if (isLoading) {
     return (
@@ -73,14 +71,14 @@ export function DevicesCard({ onPick }: { onPick: (id: string) => void }) {
     <div className="p-4 border rounded-lg bg-white">
       <div className="font-semibold mb-3 text-gray-900">Irrigation Alerts</div>
       <ul className="divide-y divide-gray-200">
-        {data.map((d: any) => (
+        {data.map((d: AttentionDevice) => (
           <li
             key={d.device_id}
             className="py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
             onClick={() => onPick(String(d.device_id))}
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <span className={`h-3 w-3 rounded-full flex-shrink-0 ${statusColor(d.status as Status)}`} />
+              <span className={`h-3 w-3 rounded-full flex-shrink-0 ${statusColor(d.status as DeviceStatus)}`} />
               <span className="font-medium text-gray-900 truncate">{d.alias}</span>
               <BatteryBars hint={d.battery_hint || 'unknown'} />
               <span className="text-xs text-gray-500 whitespace-nowrap">Last reading {d.last_seen}</span>
