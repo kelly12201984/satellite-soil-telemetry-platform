@@ -118,6 +118,14 @@ fly status
 fly logs
 ```
 
+### Faster UI iteration (skip Fly deploy until ready)
+
+For frontend-only changes, iterate locally and avoid the 4–5 minute Fly deploy loop:
+
+1. **Develop quickly** with the Vite dev server: `npm run dev` (http://localhost:5173).
+2. **Verify the production bundle locally** without deploying: `npm run preview:prod` (serves the built assets at http://localhost:4173).
+3. **Push to GitHub** once the preview looks correct; Fly will build and deploy from the repository update.
+
 ### Environment Variables
 
 Set secrets in Fly.io:
