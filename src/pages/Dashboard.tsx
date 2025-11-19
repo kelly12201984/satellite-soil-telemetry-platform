@@ -81,7 +81,7 @@ export default function Dashboard() {
               </span>
               {summary?.devices_needing_attention?.some((d: any) => d.status === 'amber') && (
                 <span className="text-sm text-amber-600 font-medium">
-                  +{summary.devices_needing_attention.filter((d: any) => d.status === 'amber').length}
+                  +{summary?.devices_needing_attention?.filter((d: any) => d.status === 'amber').length}
                 </span>
               )}
               <button
