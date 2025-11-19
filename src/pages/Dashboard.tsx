@@ -48,7 +48,13 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4 p-4 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900">🌱 Olho no Solo</h1>
+      <div className="flex items-center gap-3">
+        <img src="/BRSense_logo.png" alt="BR Sense logo" className="h-10 w-auto" />
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 leading-tight">BR Sense</h1>
+          <p className="text-sm text-gray-500">Olho no Solo</p>
+        </div>
+      </div>
 
       <FilterBar />
 
@@ -75,7 +81,7 @@ export default function Dashboard() {
               </span>
               {summary?.devices_needing_attention?.some((d: any) => d.status === 'amber') && (
                 <span className="text-sm text-amber-600 font-medium">
-                  +{summary.devices_needing_attention.filter((d: any) => d.status === 'amber').length}
+                  +{summary?.devices_needing_attention?.filter((d: any) => d.status === 'amber').length}
                 </span>
               )}
               <button

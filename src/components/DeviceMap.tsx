@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useDevices } from '@/api/hooks';
+import { Device, DeviceStatus, useDevices } from '@/api/hooks';
 
 // Fix default marker icons for Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -12,9 +12,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-type Status = 'red' | 'amber' | 'green' | 'blue' | 'stale' | 'offline' | 'gray';
-
-function statusToColor(status: Status): string {
+function statusToColor(status: DeviceStatus): string {
   switch (status) {
     case 'red': return '#ef4444'; // red-500
     case 'amber': return '#f59e0b'; // amber-500
@@ -44,7 +42,7 @@ function createCustomIcon(color: string): L.DivIcon {
 }
 
 // Component to center map on devices
-function MapCenter({ devices }: { devices: any[] }) {
+function MapCenter({ devices }: { devices: Device[] }) {
   const map = useMap();
   
   useEffect(() => {
@@ -52,7 +50,7 @@ function MapCenter({ devices }: { devices: any[] }) {
     if (validDevices.length === 0) return;
     
     if (validDevices.length === 1) {
-      map.setView([validDevices[0].lat, validDevices[0].lon], 13);
+      map.setView([validDevices[0].lat!, validDevices[0].lon!], 13);
     } else {
       const bounds = L.latLngBounds(
         validDevices.map(d => [d.lat, d.lon] as [number, number])
@@ -72,7 +70,7 @@ export function DeviceMap({ onPick }: DeviceMapProps) {
   const { data: devices = [], isLoading } = useDevices();
   
   // Filter devices that have coordinates (lat/lon from device_config, or use farm centroid if available)
-  const devicesWithLocation = (devices as any[]).filter(
+  const devicesWithLocation = devices.filter(
     d => d.lat != null && d.lon != null
   );
   

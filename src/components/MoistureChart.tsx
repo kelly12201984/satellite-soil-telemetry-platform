@@ -1,8 +1,8 @@
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, ReferenceArea } from 'recharts';
-import { useMoistureSeries } from '@/api/hooks';
+import { MoistureSeries, useMoistureSeries } from '@/api/hooks';
 
 export function MoistureChart({ q }: { q: any }) {
-  const { data, isLoading } = useMoistureSeries(q);
+  const { data = [], isLoading } = useMoistureSeries(q);
   
   if (isLoading) return <div className="h-80 flex items-center justify-center">Loading...</div>;
   if (!data || data.length === 0) return <div className="h-80 flex items-center justify-center text-gray-500">No data</div>;
@@ -12,7 +12,7 @@ export function MoistureChart({ q }: { q: any }) {
   const seriesMeta: Array<{ key: string; color: string; device: string; depth: number }> = [];
   const colors = ['#2d8659', '#27ae60', '#f39c12', '#e74c3c', '#3498db', '#9b59b6', '#1abc9c', '#e67e22'];
   
-  data.forEach((series: any, idx: number) => {
+  data.forEach((series: MoistureSeries, idx: number) => {
     const key = `${series.device_name}@${series.depth_cm}cm`;
     seriesMeta.push({
       key,
@@ -21,7 +21,7 @@ export function MoistureChart({ q }: { q: any }) {
       depth: series.depth_cm,
     });
     
-    series.points.forEach((point: any) => {
+    series.points.forEach((point) => {
       if (!timeMap.has(point.t)) {
         timeMap.set(point.t, { t: new Date(point.t).toLocaleString() });
       }
