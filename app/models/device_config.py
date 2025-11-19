@@ -6,10 +6,10 @@ from typing import Literal, Optional, TYPE_CHECKING
 from sqlalchemy import String, Float, Integer, DateTime, ForeignKey  # pyright: ignore[reportMissingImports]
 from sqlalchemy.orm import Mapped, mapped_column, relationship  # pyright: ignore[reportMissingImports]
 
-from api.app.db.base import Base
+from app.db.base import Base
 
 if TYPE_CHECKING:
-    from api.app.models.device import Device
+    from app.models.device import Device
 
 
 class DeviceConfig(Base):

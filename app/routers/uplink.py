@@ -1,9 +1,9 @@
 # api/app/routers/uplink.py
 from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.orm import Session
-from api.app.db.session import get_db
-from api.app.services.ingest_min import ingest_envelope
-from api.app.settings import settings
+from app.db.session import get_db
+from app.services.ingest_min import ingest_envelope
+from app.settings import settings
 import xmltodict, json
 
 router = APIRouter(prefix="/v1/uplink", tags=["uplink"])

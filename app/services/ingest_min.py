@@ -6,13 +6,13 @@ from fastapi import HTTPException, status
 from uuid import uuid4
 from datetime import datetime, timezone
 
-from api.app.models import device as device_model
-from api.app.models import message as message_model
-from api.app.models import reading as reading_model
+from app.models import device as device_model
+from app.models import message as message_model
+from app.models import reading as reading_model
 
 # Optional decoder imports (guarded)
 try:
-    from api.app.decoders import smartone_c as smartone
+    from app.decoders import smartone_c as smartone
 except Exception:
     smartone = None
 

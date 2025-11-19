@@ -1,10 +1,10 @@
 # api/app/routers/readings.py
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from api.app.db.session import get_db
-from api.app.models import reading as reading_model
-from api.app.models import device as device_model
-from api.app.models import message as message_model
+from app.db.session import get_db
+from app.models import reading as reading_model
+from app.models import device as device_model
+from app.models import message as message_model
 
 router = APIRouter(prefix="/v1/readings", tags=["readings"])
 
