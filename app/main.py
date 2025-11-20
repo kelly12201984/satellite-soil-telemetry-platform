@@ -77,6 +77,10 @@ app.include_router(constants.router)
 def root():
     return {"status": "running", "env": settings.ENV}
 
+@app.get("/ping")
+def ping():
+    return {"status": "ok", "message": "pong"}
+
 # ---------- DEBUG UTILITIES ----------
 @app.api_route("/__debug/echo", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 async def debug_echo(request: Request):
