@@ -68,7 +68,7 @@ export function DevicesCard({ onPick }: { onPick: (id: string) => void }) {
   if (isLoading) {
     return (
       <div className="p-3 border rounded-lg bg-white">
-        <div className="font-semibold mb-2">Irrigation Alerts</div>
+        <div className="font-semibold mb-2">Devices</div>
         <div className="animate-pulse text-gray-400 text-sm">Loading devices…</div>
       </div>
     );
@@ -77,7 +77,7 @@ export function DevicesCard({ onPick }: { onPick: (id: string) => void }) {
   if (!data || data.length === 0) {
     return (
       <div className="p-3 border rounded-lg bg-white">
-        <div className="font-semibold mb-2">Irrigation Alerts</div>
+        <div className="font-semibold mb-2">Devices</div>
         <div className="text-gray-400 text-sm">No devices found</div>
       </div>
     );
@@ -97,7 +97,7 @@ export function DevicesCard({ onPick }: { onPick: (id: string) => void }) {
   if (sortedData.length === 0) {
     return (
       <div className="p-3 border rounded-lg bg-white">
-        <div className="font-semibold mb-2">Irrigation Alerts</div>
+        <div className="font-semibold mb-2">Devices</div>
         <div className="text-gray-400 text-sm">No alerts - all probes optimal</div>
       </div>
     );
@@ -105,7 +105,7 @@ export function DevicesCard({ onPick }: { onPick: (id: string) => void }) {
 
   return (
     <div className="p-3 border rounded-lg bg-white">
-      <div className="font-semibold mb-3 text-gray-900">Irrigation Alerts</div>
+      <div className="font-semibold mb-3 text-gray-900">Devices</div>
       <ul className="divide-y divide-gray-200">
         {sortedData.map((d: AttentionDevice) => (
           <li
