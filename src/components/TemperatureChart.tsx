@@ -1,11 +1,14 @@
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useSearchParams } from 'react-router-dom';
+import { presetToRange } from '@/lib/time';
 import { TempSeries, useTempSeries } from '@/api/hooks';
 
-export function TemperatureChart({ q }: { q: any }) {
+export function TemperatureChart({ q, onToggle }: { q: any; onToggle: () => void }) {
+  const [sp, setSp] = useSearchParams();
   const { data = [], isLoading } = useTempSeries(q);
-  
-  if (isLoading) return <div className="h-80 flex items-center justify-center">Loading...</div>;
-  if (!data || data.length === 0) return <div className="h-80 flex items-center justify-center text-gray-500">No data</div>;
+
+  if (isLoading) return <div className="min-h-[32rem] flex items-center justify-center">Loading...</div>;
+  if (!data || data.length === 0) return <div className="min-h-[32rem] flex items-center justify-center text-gray-500">No data</div>;
 
   // Flatten series to chart rows
   const timeMap = new Map<string, any>();
@@ -33,30 +36,83 @@ export function TemperatureChart({ q }: { q: any }) {
   );
   
   const visibleSeries = seriesMeta.slice(0, 8);
-  
+
   return (
-    <div className="h-80 border rounded-lg p-4 bg-white">
-      <div className="font-semibold px-2 pb-2">Soil Temperature Over Time</div>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={rows}>
-          <XAxis dataKey="t" />
-          <YAxis domain={[10, 40]} />
-          <Tooltip />
-          <Legend />
-          {visibleSeries.map(s => (
-            <Line
-              key={s.key}
-              dataKey={s.key}
-              dot={false}
-              stroke={s.color}
-              strokeWidth={2}
-            />
-          ))}
-        </LineChart>
-      </ResponsiveContainer>
-      {seriesMeta.length > 8 && (
-        <div className="text-xs text-gray-500 mt-2">+ {seriesMeta.length - 8} more series</div>
-      )}
+    <div className="border rounded-lg p-3 bg-white">
+      {/* Header with title and toggle */}
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-semibold text-gray-900">Soil Temperature</h3>
+        <button
+          onClick={onToggle}
+          className="px-3 py-1 text-sm border rounded hover:bg-gray-50 transition-colors"
+        >
+          View Moisture →
+        </button>
+      </div>
+
+      {/* Depth selector */}
+      <div className="flex flex-wrap gap-2 mb-3">
+        {[10, 20, 30, 40, 50, 60].map(cm => {
+          const active = (sp.get('depths') ?? '').split(',').includes(String(cm));
+          return (
+            <button
+              key={cm}
+              className={`px-3 py-1 rounded text-sm transition-colors ${
+                active ? 'bg-purple-600 text-white' : 'bg-gray-200 hover:bg-gray-300'
+              }`}
+              onClick={() => {
+                const list = (sp.get('depths') ?? '').split(',').filter(Boolean);
+                const i = list.indexOf(String(cm));
+                if (i >= 0) list.splice(i, 1);
+                else list.push(String(cm));
+                list.length ? sp.set('depths', list.join(',')) : sp.delete('depths');
+                setSp(sp, { replace: true });
+              }}
+            >
+              {cm}cm
+            </button>
+          );
+        })}
+        <button
+          onClick={() => {
+            const { from, to } = presetToRange('7d');
+            sp.delete('devices');
+            sp.delete('depths');
+            sp.set('preset', '7d');
+            sp.set('from', from);
+            sp.set('to', to);
+            setSp(sp, { replace: true });
+          }}
+          className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+          title="Reset filters"
+        >
+          Reset
+        </button>
+      </div>
+
+      {/* Chart */}
+      <div className="h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={rows}>
+            <XAxis dataKey="t" />
+            <YAxis domain={[10, 40]} />
+            <Tooltip />
+            <Legend />
+            {visibleSeries.map(s => (
+              <Line
+                key={s.key}
+                dataKey={s.key}
+                dot={false}
+                stroke={s.color}
+                strokeWidth={2}
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+        {seriesMeta.length > 8 && (
+          <div className="text-xs text-gray-500 mt-2">+ {seriesMeta.length - 8} more series</div>
+        )}
+      </div>
     </div>
   );
 }
