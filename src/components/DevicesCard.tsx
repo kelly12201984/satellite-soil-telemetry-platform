@@ -1,15 +1,31 @@
 import { AttentionDevice, DeviceStatus, useAttention } from '@/api/hooks';
 
+// Global status color rules:
+// Blue = too wet, Green = optimal, Yellow = irrigate soon, Red = irrigate now, Gray = offline/stale
 function statusColor(s: DeviceStatus): string {
   switch (s) {
-    case 'red': return 'bg-red-500';
-    case 'amber': return 'bg-amber-500';
-    case 'green': return 'bg-green-500';
-    case 'blue': return 'bg-blue-500';
-    case 'stale': return 'bg-yellow-400';
-    case 'offline': return 'bg-gray-400';
-    case 'gray': return 'bg-gray-300';
-    default: return 'bg-gray-300';
+    case 'red': return 'bg-red-500';  // Irrigate now
+    case 'amber': return 'bg-yellow-500';  // Irrigate soon (using yellow per global rules)
+    case 'green': return 'bg-green-500';  // Optimal
+    case 'blue': return 'bg-blue-500';  // Too wet
+    case 'stale':
+    case 'offline':
+    case 'gray': return 'bg-gray-400';  // Offline/stale
+    default: return 'bg-gray-400';
+  }
+}
+
+// Sorting priority: RED → YELLOW → GRAY → BLUE → GREEN
+function statusPriority(s: DeviceStatus): number {
+  switch (s) {
+    case 'red': return 1;
+    case 'amber': return 2;  // Yellow/amber
+    case 'stale':
+    case 'offline':
+    case 'gray': return 3;
+    case 'blue': return 4;
+    case 'green': return 5;
+    default: return 6;
   }
 }
 
@@ -51,7 +67,7 @@ export function DevicesCard({ onPick }: { onPick: (id: string) => void }) {
 
   if (isLoading) {
     return (
-      <div className="p-4 border rounded-lg bg-white">
+      <div className="p-3 border rounded-lg bg-white">
         <div className="font-semibold mb-2">Irrigation Alerts</div>
         <div className="animate-pulse text-gray-400 text-sm">Loading devices…</div>
       </div>
@@ -60,28 +76,48 @@ export function DevicesCard({ onPick }: { onPick: (id: string) => void }) {
 
   if (!data || data.length === 0) {
     return (
-      <div className="p-4 border rounded-lg bg-white">
+      <div className="p-3 border rounded-lg bg-white">
         <div className="font-semibold mb-2">Irrigation Alerts</div>
         <div className="text-gray-400 text-sm">No devices found</div>
       </div>
     );
   }
 
+  // Filter: Only show red, yellow (amber), or gray in alerts (never green or blue)
+  // Sort: RED → YELLOW → GRAY → BLUE → GREEN
+  const sortedData = [...data]
+    .filter((d: AttentionDevice) => {
+      const s = d.status as DeviceStatus;
+      return s === 'red' || s === 'amber' || s === 'stale' || s === 'offline' || s === 'gray';
+    })
+    .sort((a, b) => {
+      return statusPriority(a.status as DeviceStatus) - statusPriority(b.status as DeviceStatus);
+    });
+
+  if (sortedData.length === 0) {
+    return (
+      <div className="p-3 border rounded-lg bg-white">
+        <div className="font-semibold mb-2">Irrigation Alerts</div>
+        <div className="text-gray-400 text-sm">No alerts - all probes optimal</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 border rounded-lg bg-white">
+    <div className="p-3 border rounded-lg bg-white">
       <div className="font-semibold mb-3 text-gray-900">Irrigation Alerts</div>
       <ul className="divide-y divide-gray-200">
-        {data.map((d: AttentionDevice) => (
+        {sortedData.map((d: AttentionDevice) => (
           <li
             key={d.device_id}
-            className="py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+            className="py-2 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
             onClick={() => onPick(String(d.device_id))}
           >
-            <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
               <span className={`h-3 w-3 rounded-full flex-shrink-0 ${statusColor(d.status as DeviceStatus)}`} />
-              <span className="font-medium text-gray-900 truncate">{d.alias}</span>
+              <span className="font-medium text-gray-900 truncate text-sm">{d.alias}</span>
               <BatteryBars hint={d.battery_hint || 'unknown'} />
-              <span className="text-xs text-gray-500 whitespace-nowrap">Last reading {d.last_seen}</span>
+              <span className="text-xs text-gray-500 whitespace-nowrap ml-auto">{d.last_seen}</span>
             </div>
           </li>
         ))}
