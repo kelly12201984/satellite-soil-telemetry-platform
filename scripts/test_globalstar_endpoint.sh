@@ -6,7 +6,7 @@ set -e
 
 # Configuration
 API_URL="https://api.soilreadings.com"
-UPLINK_TOKEN="y7mlrffdn9XxPVR1SP8tt8iurW6XgZEfl4JpfcKv5eI="
+UPLINK_TOKEN="y7mlrffdn9XxPVR1SP9tt8iurW6XgZEfl4JpfcKv5eI="
 TEST_MESSAGE_DIR="Test-Messages"
 
 # Colors for output

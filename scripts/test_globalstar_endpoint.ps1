@@ -3,7 +3,7 @@
 
 param(
     [string]$ApiUrl = "https://api.soilreadings.com",
-    [string]$UplinkToken = "y7mlrffdn9XxPVR1SP8tt8iurW6XgZEfl4JpfcKv5eI=",
+    [string]$UplinkToken = "y7mlrffdn9XxPVR1SP9tt8iurW6XgZEfl4JpfcKv5eI=",
     [string]$TestMessageDir = "Test-Messages"
 )
 
