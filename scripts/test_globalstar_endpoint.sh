@@ -6,7 +6,7 @@ set -e
 
 # Configuration
 API_URL="https://api.soilreadings.com"
-UPLINK_TOKEN="y7mlrffdn9XxPVR1SP8tt8iurW6XgZEfl4JpfcKv5eI="
+UPLINK_TOKEN="y7mlrffdn9XxPVR1SP9tt8iurW6XgZEfl4JpfcKv5eI="
 TEST_MESSAGE_DIR="Test-Messages"
 
 # Colors for output
@@ -56,6 +56,20 @@ test_health_check() {
         print_info "Response: $response"
     else
         print_fail "Health endpoint did not return expected status"
+        print_info "Response: $response"
+    fi
+}
+
+test_ping_endpoint() {
+    print_test "Ping Endpoint"
+
+    response=$(curl -s "$API_URL/ping")
+
+    if echo "$response" | grep -q '"status":"ok"' && echo "$response" | grep -q '"message":"pong"'; then
+        print_pass "Ping endpoint returned expected response"
+        print_info "Response: $response"
+    else
+        print_fail "Ping endpoint did not return expected response"
         print_info "Response: $response"
     fi
 }
@@ -186,6 +200,7 @@ main() {
 
     # Run all tests
     test_health_check
+    test_ping_endpoint
     test_no_token_no_allowlist
     test_with_token
     test_invalid_payload

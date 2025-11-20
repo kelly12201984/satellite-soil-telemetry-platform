@@ -3,7 +3,7 @@
 
 param(
     [string]$ApiUrl = "https://api.soilreadings.com",
-    [string]$UplinkToken = "y7mlrffdn9XxPVR1SP8tt8iurW6XgZEfl4JpfcKv5eI=",
+    [string]$UplinkToken = "y7mlrffdn9XxPVR1SP9tt8iurW6XgZEfl4JpfcKv5eI=",
     [string]$TestMessageDir = "Test-Messages"
 )
 
@@ -61,6 +61,24 @@ function Test-HealthCheck {
         }
     } catch {
         Write-Fail "Health check failed with error: $_"
+    }
+}
+
+function Test-PingEndpoint {
+    Write-TestName "Ping Endpoint"
+
+    try {
+        $response = Invoke-RestMethod -Uri "$ApiUrl/ping" -Method Get
+
+        if ($response.status -eq "ok" -and $response.message -eq "pong") {
+            Write-Pass "Ping endpoint returned expected response"
+            Write-Info "Response: $($response | ConvertTo-Json -Compress)"
+        } else {
+            Write-Fail "Ping endpoint did not return expected response"
+            Write-Info "Response: $($response | ConvertTo-Json -Compress)"
+        }
+    } catch {
+        Write-Fail "Ping check failed with error: $_"
     }
 }
 
@@ -193,6 +211,7 @@ function Main {
 
     # Run all tests
     Test-HealthCheck
+    Test-PingEndpoint
     Test-NoTokenNoAllowlist
     Test-WithToken
     Test-InvalidPayload
