@@ -150,11 +150,23 @@ Expected response: `{"device_id":X,"message_id":Y,"totals":{...}}`
 
 ### Health Check
 
+The platform provides two endpoints for health/connectivity checks:
+
+**Root Endpoint:**
 ```bash
 curl https://api.soilreadings.com/
 ```
 
 Expected: `{"status":"running","env":"prod"}`
+
+**Ping Endpoint:**
+```bash
+curl https://api.soilreadings.com/ping
+```
+
+Expected: `{"status":"ok","message":"pong"}`
+
+> Both endpoints are publicly accessible (no authentication required) and can be used for monitoring and connectivity verification.
 
 ---
 
