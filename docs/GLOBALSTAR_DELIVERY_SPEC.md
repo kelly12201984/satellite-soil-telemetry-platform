@@ -17,29 +17,34 @@ This document contains only the parameters Globalstar needs to configure HTTPS d
 
 ## 2. HTTP Headers
 
-- `Content-Type: application/json` _(preferred)_ or `application/xml`
+- `Content-Type: application/xml` _(Globalstar standard)_ or `application/json`
 - `X-Uplink-Token: y7mlrffdn9XxPVR1SP9tt8iurW6XgZEfl4JpfcKv5eI=` _(required for authorization)_
 
 ---
 
 ## 3. Payload Schema
 
-### JSON (preferred)
+### Globalstar Standard XML (Primary Format)
 
-```json
-{
-  "esn": "0-5024242",
-  "device_name": "field-probe-1",
-  "message": {
-    "reading": {
-      "moisture": 12.3,
-      "temperature_c": 23.4
-    }
-  }
-}
+For SmartOne C satellite payloads, the standard Globalstar `stuMessages` envelope with hex-encoded payloads:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<stuMessages timeStamp="15/12/2016 21:00:00 GMT" messageID="abc123">
+  <stuMessage>
+    <esn>0-99990</esn>
+    <unixTime>1034268516</unixTime>
+    <gps>N</gps>
+    <payload length="9" source="pc" encoding="hex">0xC0560D72DA4AB2445A</payload>
+  </stuMessage>
+</stuMessages>
 ```
 
-### XML (supported)
+The hex `payload` from satellite frames will be automatically decoded and parsed.
+
+### Simplified XML (Alternative Format)
+
+For testing or direct integration:
 
 ```xml
 <envelope>
@@ -54,28 +59,28 @@ This document contains only the parameters Globalstar needs to configure HTTPS d
 </envelope>
 ```
 
-### Globalstar Standard XML (also supported)
+### JSON (Alternative Format)
 
-For SmartOne C satellite payloads, we accept the standard Globalstar `stuMessages` envelope with hex-encoded payloads:
+Also supported for testing or API integration:
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<stuMessages timeStamp="15/12/2016 21:00:00 GMT" messageID="abc123">
-  <stuMessage>
-    <esn>0-99990</esn>
-    <unixTime>1034268516</unixTime>
-    <gps>N</gps>
-    <payload length="9" source="pc" encoding="hex">0xC0560D72DA4AB2445A</payload>
-  </stuMessage>
-</stuMessages>
+```json
+{
+  "esn": "0-5024242",
+  "device_name": "field-probe-1",
+  "message": {
+    "reading": {
+      "moisture": 12.3,
+      "temperature_c": 23.4
+    }
+  }
+}
 ```
 
-**Fields:**
+### Field Definitions
 - `esn` _(string, required)_: Device ESN/IMEI/unique ID
 - `device_name` _(string, optional)_: Human friendly label
 - `message.reading.moisture` _(number, %)_
 - `message.reading.temperature_c` _(number, Celsius)_
-- Hex `payload` from satellite frames will be decoded and parsed automatically
 
 > Additional metrics (battery, RSSI/SNR, GPS, timestamps, etc.) may be included and will be accepted by the API without breaking.
 
@@ -129,7 +134,16 @@ For SmartOne C satellite payloads, we accept the standard Globalstar `stuMessage
 
 ### Test Endpoint
 
-You can verify connectivity before going live:
+You can verify connectivity before going live using XML (Globalstar standard format):
+
+```bash
+curl -X POST https://api.soilreadings.com/v1/uplink/receive \
+  -H "Content-Type: application/xml" \
+  -H "X-Uplink-Token: y7mlrffdn9XxPVR1SP9tt8iurW6XgZEfl4JpfcKv5eI=" \
+  -d '<stuMessages><stuMessage><esn>TEST-001</esn><payload>0200000000000000</payload></stuMessage></stuMessages>'
+```
+
+Or using JSON for testing:
 
 ```bash
 curl -X POST https://api.soilreadings.com/v1/uplink/receive \
