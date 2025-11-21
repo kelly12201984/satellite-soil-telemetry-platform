@@ -78,69 +78,67 @@ export function DeviceMap({ onPick }: DeviceMapProps) {
   const defaultCenter: [number, number] = [-23.5505, -46.6333];
   const defaultZoom = 6;
   
-  if (isLoading) {
-    return (
-      <div className="h-64 border rounded-lg bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-500">Loading map...</div>
-      </div>
-    );
-  }
-  
-  if (devicesWithLocation.length === 0) {
-    return (
-      <div className="h-64 border rounded-lg bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-500">No devices with location data</div>
-      </div>
-    );
-  }
-  
   return (
-    <div className="h-64 border rounded-lg overflow-hidden">
-      <MapContainer
-        center={defaultCenter}
-        zoom={defaultZoom}
-        style={{ height: '100%', width: '100%' }}
-        scrollWheelZoom={true}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        
-        <MapCenter devices={devicesWithLocation} />
-        
-        {devicesWithLocation.map((device: any) => {
-          const color = statusToColor(device.status || 'gray');
-          const icon = createCustomIcon(color);
-          
-          return (
-            <Marker
-              key={device.id}
-              position={[device.lat, device.lon]}
-              icon={icon}
-              eventHandlers={{
-                click: () => {
-                  onPick(String(device.id));
-                },
-              }}
-            >
-              <Popup>
-                <div className="text-sm">
-                  <div className="font-semibold">{device.alias}</div>
-                  <div className="text-gray-600">Status: {device.status}</div>
-                  <div className="text-gray-600">Last seen: {device.last_seen}</div>
-                  <button
-                    onClick={() => onPick(String(device.id))}
-                    className="mt-2 text-xs text-blue-600 hover:underline"
-                  >
-                    View details →
-                  </button>
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
-      </MapContainer>
+    <div>
+      <h2 className="text-lg font-semibold mb-2 text-gray-900">Farm Map</h2>
+      {isLoading ? (
+        <div className="h-64 border rounded-lg bg-gray-100 flex items-center justify-center">
+          <div className="text-gray-500">Loading map...</div>
+        </div>
+      ) : (
+        <div className="h-64 border rounded-lg overflow-hidden relative">
+          {devicesWithLocation.length === 0 && (
+            <div className="absolute inset-0 z-[1000] bg-gray-100/90 flex items-center justify-center pointer-events-none">
+              <div className="text-gray-600 text-sm">Waiting for GPS data for this farm.</div>
+            </div>
+          )}
+          <MapContainer
+            center={defaultCenter}
+            zoom={defaultZoom}
+            style={{ height: '100%', width: '100%' }}
+            scrollWheelZoom={true}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+
+            <MapCenter devices={devicesWithLocation} />
+
+            {devicesWithLocation.map((device: any) => {
+              const color = statusToColor(device.status || 'gray');
+              const icon = createCustomIcon(color);
+
+              return (
+                <Marker
+                  key={device.id}
+                  position={[device.lat, device.lon]}
+                  icon={icon}
+                  eventHandlers={{
+                    click: () => {
+                      onPick(String(device.id));
+                    },
+                  }}
+                >
+                  <Popup>
+                    <div className="text-sm">
+                      <div className="font-semibold">{device.alias}</div>
+                      <div className="text-gray-600">Status: {device.status}</div>
+                      <div className="text-gray-600">Last seen: {device.last_seen}</div>
+                      <button
+                        onClick={() => onPick(String(device.id))}
+                        className="mt-2 text-xs text-blue-600 hover:underline"
+                      >
+                        View details →
+                      </button>
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
+          </MapContainer>
+        </div>
+      )}
     </div>
   );
 }
