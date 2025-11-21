@@ -47,7 +47,7 @@ export default function Dashboard() {
 
   const { data: summary, isLoading } = useSummary(q);
 
-  const hasDevices = summary?.devices_needing_attention?.length > 0;
+  const hasDevices = (summary?.devices_needing_attention?.length ?? 0) > 0;
   const hasReadings = summary?.last_reading_at != null;
 
   return (
