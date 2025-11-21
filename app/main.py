@@ -60,6 +60,15 @@ if UI_DIR.exists():
     # Mount UI assets (JS, CSS, etc.)
     app.mount("/assets", StaticFiles(directory=str(UI_DIR / "assets")), name="ui-assets")
 
+    # Serve logo from UI directory
+    @app.get("/BRSense_logo.png")
+    def logo():
+        logo_path = UI_DIR / "BRSense_logo.png"
+        if not logo_path.exists():
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="Logo not found")
+        return FileResponse(logo_path, media_type="image/png")
+
 # ---------- CORS ----------
 app.add_middleware(
     CORSMiddleware,
