@@ -42,19 +42,23 @@ from fastapi.responses import FileResponse
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 
-# Serve /static/* for raw assets
+# Serve /static/* for raw assets (old HTML page, etc.)
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-# Simple page to view latest readings
-@app.get("/readings")
-def readings_page():
-    html = STATIC_DIR / "readings.html"
-    if not html.exists():
-        # Helpful error if the file is missing
-        from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail=f"{html} not found on server")
-    return FileResponse(html, media_type="text/html")
+# Serve React UI at /readings
+UI_DIR = BASE_DIR / "static" / "ui"
+if UI_DIR.exists():
+    @app.get("/readings")
+    def readings_page():
+        html = UI_DIR / "index.html"
+        if not html.exists():
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail=f"{html} not found on server")
+        return FileResponse(html, media_type="text/html")
+
+    # Mount UI assets (JS, CSS, etc.)
+    app.mount("/assets", StaticFiles(directory=str(UI_DIR / "assets")), name="ui-assets")
 
 # ---------- CORS ----------
 app.add_middleware(
