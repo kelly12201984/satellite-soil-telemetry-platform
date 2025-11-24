@@ -20,6 +20,7 @@ from app.routers import readings as readings_router
 from app.routers import metrics
 from app.routers import devices
 from app.routers import constants
+from app.routers import farms
 
 # ---------- Logging ----------
 logging.basicConfig(
@@ -46,11 +47,12 @@ STATIC_DIR = BASE_DIR / "static"
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-# Serve React UI at /readings
+# Serve React UI at /readings and all sub-paths (for React Router)
 UI_DIR = BASE_DIR / "static" / "ui"
 if UI_DIR.exists():
     @app.get("/readings")
-    def readings_page():
+    @app.get("/readings/{path:path}")
+    def readings_page(path: str = ""):
         html = UI_DIR / "index.html"
         if not html.exists():
             from fastapi import HTTPException
@@ -84,6 +86,7 @@ app.include_router(readings_router.router)
 app.include_router(metrics.router)
 app.include_router(devices.router)
 app.include_router(constants.router)
+app.include_router(farms.router)
 
 # ---------- Root / Health ----------
 @app.get("/")

@@ -41,6 +41,29 @@ export interface Device {
   last_seen?: string;
   lat?: number;
   lon?: number;
+  moisture30?: number;
+  battery_hint?: string;
+}
+
+export interface Farm {
+  id: string;
+  name: string;
+  device_count: number;
+  status: DeviceStatus;
+  attention_count: number;
+  last_reading: string | null;
+  last_reading_at: string | null;
+  lat: number | null;
+  lon: number | null;
+}
+
+export interface FarmDetail {
+  id: string;
+  name: string;
+  device_count: number;
+  devices: Device[];
+  lat: number | null;
+  lon: number | null;
 }
 
 export function useSummary(q: any) {
@@ -75,6 +98,21 @@ export function useDevices(farmId?: string) {
   return useQuery<Device[]>({
     queryKey: ['devices', farmId],
     queryFn: () => api('/v1/devices', { farm_id: farmId })
+  });
+}
+
+export function useFarms() {
+  return useQuery<Farm[]>({
+    queryKey: ['farms'],
+    queryFn: () => api('/v1/farms')
+  });
+}
+
+export function useFarmDetail(farmId: string) {
+  return useQuery<FarmDetail>({
+    queryKey: ['farm', farmId],
+    queryFn: () => api(`/v1/farms/${farmId}`),
+    enabled: !!farmId
   });
 }
 
