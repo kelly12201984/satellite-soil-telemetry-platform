@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FilterBar } from '@/components/FilterBar';
 import { useSummary } from '@/api/hooks';
@@ -15,7 +15,7 @@ function timeAgo(iso: string) {
 
 function Kpi({ title, value }: { title: string; value: string }) {
   return (
-    <div className="p-3 border rounded-lg bg-white">
+    <div className="p-4 border rounded-lg bg-white">
       <div className="text-sm text-gray-500">{title}</div>
       <div className="text-2xl font-semibold">{value}</div>
     </div>
@@ -24,7 +24,6 @@ function Kpi({ title, value }: { title: string; value: string }) {
 
 export default function Dashboard() {
   const [sp, setSp] = useSearchParams();
-  const [activeChart, setActiveChart] = useState<'moisture' | 'temperature'>('moisture');
 
   // Initialize default params if missing
   useEffect(() => {
@@ -47,21 +46,15 @@ export default function Dashboard() {
 
   const { data: summary, isLoading } = useSummary(q);
 
-  const hasDevices = (summary?.devices_needing_attention?.length ?? 0) > 0;
-  const hasReadings = summary?.last_reading_at != null;
-
   return (
-    <div className="space-y-3 p-4 max-w-7xl mx-auto">
-      {/* Header - logo only, no "Olho no Solo" */}
+    <div className="space-y-4 p-4 max-w-7xl mx-auto">
       <div className="flex items-center gap-3">
-        <img src="/BRSense_logo.png" alt="BR Sense logo" className="h-10 w-auto" />
-        <h1 className="text-3xl font-bold text-gray-900 leading-tight">BR Sense</h1>
+        <img src="/BRSense_logo.png" alt="BRSense logo" className="h-16 w-auto" />
       </div>
 
-      {/* Filter Bar - Only farm selector + time range */}
       <FilterBar />
 
-      {/* Map Section */}
+      {/* Map with device pins */}
       <DeviceMap
         onPick={(id) => {
           sp.set('devices', id);
@@ -70,12 +63,40 @@ export default function Dashboard() {
         }}
       />
 
-      {/* Stats Cards - 4 cards, removed "Devices needing attention" duplicate */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+      {/* Attention Card (small, left) + KPI tiles */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        {/* Small attention card */}
+        <div className="p-4 border rounded-lg bg-white">
+          <div className="text-sm text-gray-500 mb-1">Devices needing attention</div>
+          {isLoading ? (
+            <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+          ) : (
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-semibold text-red-600">
+                {summary?.devices_needing_attention?.filter((d: any) => d.status === 'red').length ?? 0}
+              </span>
+              {summary?.devices_needing_attention?.some((d: any) => d.status === 'amber') && (
+                <span className="text-sm text-amber-600 font-medium">
+                  +{summary?.devices_needing_attention?.filter((d: any) => d.status === 'amber').length}
+                </span>
+              )}
+              <button
+                onClick={() => {
+                  document.getElementById('charts')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="text-xs text-blue-600 hover:underline ml-auto"
+              >
+                View →
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* KPI tiles */}
         {isLoading ? (
           <>
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="p-3 border rounded-lg bg-white animate-pulse">
+              <div key={i} className="p-4 border rounded-lg bg-white animate-pulse">
                 <div className="h-4 bg-gray-200 rounded mb-2"></div>
                 <div className="h-8 bg-gray-200 rounded"></div>
               </div>
@@ -85,27 +106,30 @@ export default function Dashboard() {
           <>
             <Kpi
               title="Avg Moisture"
-              value={hasReadings ? `${summary?.avg_moisture?.toFixed?.(1) ?? '–'} %` : '–'}
+              value={`${summary?.avg_moisture?.toFixed?.(1) ?? '–'} %`}
             />
             <Kpi
               title="Avg Temp"
-              value={hasReadings ? `${summary?.avg_temp?.toFixed?.(1) ?? '–'} °C` : '–'}
+              value={`${summary?.avg_temp?.toFixed?.(1) ?? '–'} °C`}
             />
             <Kpi
               title="Last Reading"
-              value={summary?.last_reading_at ? timeAgo(summary.last_reading_at) : (hasDevices ? 'No recent readings' : 'No probes registered')}
+              value={summary?.last_reading_at ? timeAgo(summary.last_reading_at) : '–'}
             />
             <Kpi
               title="Active Devices"
-              value={hasDevices ? `${summary?.devices_needing_attention?.length ?? 0}` : '0'}
+              value={`${summary?.devices_needing_attention?.length ?? 0}`}
             />
           </>
         )}
       </div>
 
-      {/* Main row - Device list left, Charts right */}
-      <div className="grid md:grid-cols-3 gap-3" id="charts">
-        {/* Device List - Left column */}
+      {/* Main row */}
+      <div className="grid md:grid-cols-3 gap-4" id="charts">
+        <div className="md:col-span-2 space-y-4">
+          <MoistureChart q={q} />
+          <TemperatureChart q={q} />
+        </div>
         <DevicesCard
           onPick={(id) => {
             sp.set('devices', id);
@@ -113,22 +137,8 @@ export default function Dashboard() {
             document.getElementById('charts')?.scrollIntoView({ behavior: 'smooth' });
           }}
         />
-
-        {/* Charts - Right 2 columns */}
-        <div className="md:col-span-2">
-          {activeChart === 'moisture' ? (
-            <MoistureChart
-              q={q}
-              onToggle={() => setActiveChart('temperature')}
-            />
-          ) : (
-            <TemperatureChart
-              q={q}
-              onToggle={() => setActiveChart('moisture')}
-            />
-          )}
-        </div>
       </div>
     </div>
   );
 }
+

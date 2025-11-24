@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { presetToRange } from '@/lib/time';
 import { TempSeries, useTempSeries } from '@/api/hooks';
 
-export function TemperatureChart({ q, onToggle }: { q: any; onToggle: () => void }) {
+export function TemperatureChart({ q }: { q: any }) {
   const [sp, setSp] = useSearchParams();
   const { data = [], isLoading } = useTempSeries(q);
 
@@ -49,16 +49,7 @@ export function TemperatureChart({ q, onToggle }: { q: any; onToggle: () => void
 
   return (
     <div className="border-2 border-stone-200 rounded-xl p-4 bg-white">
-      {/* Header with title and toggle */}
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-stone-800 text-lg">Soil Temperature</h3>
-        <button
-          onClick={onToggle}
-          className="px-4 py-2 text-sm font-medium border-2 border-stone-200 rounded-lg hover:bg-stone-50 transition-colors text-stone-700"
-        >
-          View Moisture
-        </button>
-      </div>
+      <h3 className="font-semibold text-stone-800 text-lg mb-4">Soil Temperature</h3>
 
       {/* Depth selector */}
       <div className="flex flex-wrap gap-2 mb-4">
