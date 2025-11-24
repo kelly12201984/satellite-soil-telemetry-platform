@@ -20,6 +20,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/readings" element={<Dashboard />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
