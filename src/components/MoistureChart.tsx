@@ -7,14 +7,24 @@ export function MoistureChart({ q, onToggle }: { q: any; onToggle: () => void })
   const [sp, setSp] = useSearchParams();
   const { data = [], isLoading } = useMoistureSeries(q);
 
-  if (isLoading) return <div className="min-h-[32rem] flex items-center justify-center">Loading...</div>;
-  if (!data || data.length === 0) return <div className="min-h-[32rem] flex items-center justify-center text-gray-500">No data</div>;
+  if (isLoading) return (
+    <div className="border-2 border-stone-200 rounded-xl p-4 bg-white min-h-[28rem] flex items-center justify-center">
+      <div className="text-stone-500">Loading chart data...</div>
+    </div>
+  );
+
+  if (!data || data.length === 0) return (
+    <div className="border-2 border-stone-200 rounded-xl p-4 bg-white min-h-[28rem] flex items-center justify-center">
+      <div className="text-stone-500">No moisture data available</div>
+    </div>
+  );
 
   // Flatten series to chart rows
   const timeMap = new Map<string, any>();
   const seriesMeta: Array<{ key: string; color: string; device: string; depth: number }> = [];
-  const colors = ['#2d8659', '#27ae60', '#f39c12', '#e74c3c', '#3498db', '#9b59b6', '#1abc9c', '#e67e22'];
-  
+  // Earthy greens and browns palette
+  const colors = ['#059669', '#10b981', '#0d9488', '#0891b2', '#6366f1', '#8b5cf6', '#d97706', '#ea580c'];
+
   data.forEach((series: MoistureSeries, idx: number) => {
     const key = `${series.device_name}@${series.depth_cm}cm`;
     seriesMeta.push({
@@ -23,7 +33,7 @@ export function MoistureChart({ q, onToggle }: { q: any; onToggle: () => void })
       device: series.device_name,
       depth: series.depth_cm,
     });
-    
+
     series.points.forEach((point) => {
       if (!timeMap.has(point.t)) {
         timeMap.set(point.t, { t: new Date(point.t).toLocaleString() });
@@ -31,35 +41,37 @@ export function MoistureChart({ q, onToggle }: { q: any; onToggle: () => void })
       timeMap.get(point.t)[key] = point.v;
     });
   });
-  
-  const rows = Array.from(timeMap.values()).sort((a, b) => 
+
+  const rows = Array.from(timeMap.values()).sort((a, b) =>
     new Date(a.t).getTime() - new Date(b.t).getTime()
   );
-  
+
   const visibleSeries = seriesMeta.slice(0, 8);
 
   return (
-    <div className="border rounded-lg p-3 bg-white">
+    <div className="border-2 border-stone-200 rounded-xl p-4 bg-white">
       {/* Header with title and toggle */}
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-gray-900">Soil Moisture</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold text-stone-800 text-lg">Soil Moisture</h3>
         <button
           onClick={onToggle}
-          className="px-3 py-1 text-sm border rounded hover:bg-gray-50 transition-colors"
+          className="px-4 py-2 text-sm font-medium border-2 border-stone-200 rounded-lg hover:bg-stone-50 transition-colors text-stone-700"
         >
-          View Temperature →
+          View Temperature
         </button>
       </div>
 
       {/* Depth selector */}
-      <div className="flex flex-wrap gap-2 mb-3">
+      <div className="flex flex-wrap gap-2 mb-4">
         {[10, 20, 30, 40, 50, 60].map(cm => {
           const active = (sp.get('depths') ?? '').split(',').includes(String(cm));
           return (
             <button
               key={cm}
-              className={`px-3 py-1 rounded text-sm transition-colors ${
-                active ? 'bg-purple-600 text-white' : 'bg-gray-200 hover:bg-gray-300'
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                active
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-stone-200 text-stone-700 hover:bg-stone-300'
               }`}
               onClick={() => {
                 const list = (sp.get('depths') ?? '').split(',').filter(Boolean);
@@ -84,7 +96,7 @@ export function MoistureChart({ q, onToggle }: { q: any; onToggle: () => void })
             sp.set('to', to);
             setSp(sp, { replace: true });
           }}
-          className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+          className="px-3 py-2 text-sm font-medium border-2 border-stone-300 rounded-lg hover:bg-stone-50 transition-colors text-stone-600"
           title="Reset filters"
         >
           Reset
@@ -95,12 +107,18 @@ export function MoistureChart({ q, onToggle }: { q: any; onToggle: () => void })
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows}>
-            {/* Threshold bands */}
-            <ReferenceArea y1={0} y2={25} fill="#fee2e2" />
-            <ReferenceArea y1={25} y2={30} fill="#fef3c7" />
-            <XAxis dataKey="t" />
-            <YAxis domain={[0, 60]} />
-            <Tooltip />
+            {/* Threshold bands - red zone and yellow zone */}
+            <ReferenceArea y1={0} y2={25} fill="#fef2f2" fillOpacity={0.8} />
+            <ReferenceArea y1={25} y2={30} fill="#fefce8" fillOpacity={0.8} />
+            <XAxis dataKey="t" tick={{ fontSize: 11 }} stroke="#78716c" />
+            <YAxis domain={[0, 60]} tick={{ fontSize: 11 }} stroke="#78716c" />
+            <Tooltip
+              contentStyle={{
+                borderRadius: '8px',
+                border: '2px solid #e7e5e4',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+              }}
+            />
             <Legend />
             {visibleSeries.map(s => (
               <Line
@@ -114,10 +132,9 @@ export function MoistureChart({ q, onToggle }: { q: any; onToggle: () => void })
           </LineChart>
         </ResponsiveContainer>
         {seriesMeta.length > 8 && (
-          <div className="text-xs text-gray-500 mt-2">+ {seriesMeta.length - 8} more series</div>
+          <div className="text-xs text-stone-500 mt-2">+ {seriesMeta.length - 8} more series</div>
         )}
       </div>
     </div>
   );
 }
-

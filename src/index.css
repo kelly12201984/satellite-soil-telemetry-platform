@@ -2,9 +2,102 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background: #f5f7fa;
+:root {
+  /* Earthy color palette */
+  --color-earth-50: #faf9f6;
+  --color-earth-100: #f5f3ef;
+  --color-earth-200: #e8e4dc;
+  --color-earth-300: #d4cdc0;
+  --color-earth-400: #a39785;
+  --color-earth-500: #786a54;
+  --color-earth-600: #5c4f3d;
+  --color-earth-700: #463d30;
+  --color-earth-800: #352e25;
+  --color-earth-900: #261f19;
 }
 
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: #faf9f7;
+  color: #1c1917;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* High contrast text for field readability */
+h1, h2, h3, h4, h5, h6 {
+  color: #1c1917;
+  font-weight: 600;
+}
+
+/* Large touch targets for mobile/field use */
+button, a, [role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Button hover states */
+button:focus-visible, a:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar for device lists */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f5f3ef;
+  border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #d4cdc0;
+  border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #a39785;
+}
+
+/* Map marker styles */
+.farm-marker, .device-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Leaflet popup styling */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-popup-content {
+  margin: 12px 14px;
+}
+
+/* Chart container styling */
+.recharts-wrapper {
+  font-family: inherit;
+}
+
+.recharts-legend-item-text {
+  font-size: 12px !important;
+  color: #44403c !important;
+}
+
+/* Status indicator animations */
+@keyframes pulse-attention {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-attention {
+  animation: pulse-attention 2s ease-in-out infinite;
+}
