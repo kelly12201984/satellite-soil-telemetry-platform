@@ -200,7 +200,7 @@ alembic upgrade head
 
 ## 🌐 Production
 
-- **API**: https://api.soilreadings.com
+- **API**: https://api.soilreadings.com/readings
 - **Web Dashboard**: https://api.soilreadings.com/static/readings.html
 - **Status**: Live and processing satellite telemetry
 
