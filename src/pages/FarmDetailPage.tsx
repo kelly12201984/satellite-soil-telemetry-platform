@@ -172,22 +172,20 @@ function FilterBar() {
         <button
           key={p}
           onClick={() => setPreset(p)}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            preset === p
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${preset === p
               ? 'bg-emerald-600 text-white'
               : 'bg-stone-200 text-stone-700 hover:bg-stone-300'
-          }`}
+            }`}
         >
           {p}
         </button>
       ))}
       <button
         onClick={() => setPreset('custom')}
-        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-          preset === 'custom'
+        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${preset === 'custom'
             ? 'bg-emerald-600 text-white'
             : 'bg-stone-200 text-stone-700 hover:bg-stone-300'
-        }`}
+          }`}
       >
         Custom
       </button>
@@ -235,9 +233,8 @@ function DeviceList({ devices, onSelect, selectedId }: {
             <li
               key={device.id}
               onClick={() => onSelect(String(device.id))}
-              className={`px-4 py-3 cursor-pointer transition-colors ${
-                isSelected ? 'bg-emerald-50' : 'hover:bg-stone-50'
-              }`}
+              className={`px-4 py-3 cursor-pointer transition-colors ${isSelected ? 'bg-emerald-50' : 'hover:bg-stone-50'
+                }`}
             >
               <div className="flex items-center gap-3">
                 <span className={`w-3 h-3 rounded-full flex-shrink-0 ${statusToBgClass(device.status || 'gray')}`} />
