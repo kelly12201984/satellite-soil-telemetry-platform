@@ -25,7 +25,7 @@ export function FilterBar() {
   }
 
   return (
-    <div className="flex flex-wrap gap-2 items-center">
+    <div className="flex flex-wrap gap-2 items-center bg-white/90 border border-[#ede2d3] rounded-2xl p-3 shadow-sm">
       {/* Time range presets */}
       <select
         value={preset}

@@ -40,31 +40,35 @@ export function FarmCard({ farm }: FarmCardProps) {
   return (
     <Link
       to={`/readings/farm/${farm.id}`}
-      className={`block p-5 rounded-xl border-2 ${config.border} ${config.bg} hover:shadow-lg transition-all duration-200 cursor-pointer group`}
+      className={`relative block p-5 rounded-2xl border-2 ${config.border} ${config.bg} hover:shadow-lg transition-all duration-200 cursor-pointer group overflow-hidden`}
     >
-      <div className="flex items-start justify-between mb-3">
-        <h3 className="text-lg font-semibold text-stone-800 group-hover:text-stone-900">
-          {farm.name}
-        </h3>
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="text-xs uppercase tracking-[0.35em] text-stone-500 mb-1">{config.label}</div>
+          <h3 className="text-2xl font-semibold text-stone-900 group-hover:text-stone-950">
+            {farm.name}
+          </h3>
+        </div>
         <StatusBadge status={farm.status} />
       </div>
 
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
           <div className="text-stone-500 mb-0.5">Devices</div>
-          <div className="font-medium text-stone-800">{farm.device_count}</div>
+          <div className="text-xl font-semibold text-stone-900">{farm.device_count}</div>
         </div>
         <div>
           <div className="text-stone-500 mb-0.5">Last Reading</div>
-          <div className="font-medium text-stone-800">{farm.last_reading || 'No data'}</div>
+          <div className="text-base font-medium text-stone-800">{farm.last_reading || 'No data'}</div>
         </div>
       </div>
 
       {farm.attention_count > 0 && (
-        <div className="mt-3 pt-3 border-t border-stone-200">
-          <span className="text-sm text-red-600 font-medium">
+        <div className="mt-3 pt-3 border-t border-stone-200 flex items-center justify-between text-sm">
+          <span className="text-red-600 font-medium">
             {farm.attention_count} device{farm.attention_count > 1 ? 's' : ''} need{farm.attention_count === 1 ? 's' : ''} attention
           </span>
+          <span className="text-stone-500">Monitor</span>
         </div>
       )}
     </Link>

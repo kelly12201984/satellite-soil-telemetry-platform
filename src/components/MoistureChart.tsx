@@ -1,4 +1,4 @@
-import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, ReferenceArea } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, ReferenceArea, CartesianGrid } from 'recharts';
 import { useSearchParams } from 'react-router-dom';
 import { presetToRange } from '@/lib/time';
 import { MoistureSeries, useMoistureSeries } from '@/api/hooks';
@@ -36,7 +36,7 @@ export function MoistureChart({ q }: { q: any }) {
 
     series.points.forEach((point) => {
       if (!timeMap.has(point.t)) {
-        timeMap.set(point.t, { t: new Date(point.t).toLocaleString() });
+        timeMap.set(point.t, { t: point.t });
       }
       timeMap.get(point.t)[key] = point.v;
     });
@@ -48,8 +48,11 @@ export function MoistureChart({ q }: { q: any }) {
 
   const visibleSeries = seriesMeta.slice(0, 8);
 
+  const formatTick = (value: string) =>
+    new Date(value).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+
   return (
-    <div className="border-2 border-stone-200 rounded-xl p-4 bg-white">
+    <div className="border border-[#ede2d3] rounded-2xl p-5 bg-white/95 shadow-sm">
       <h3 className="font-semibold text-stone-800 text-lg mb-4">Soil Moisture</h3>
 
       {/* Depth selector */}
@@ -99,18 +102,31 @@ export function MoistureChart({ q }: { q: any }) {
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows}>
             {/* Threshold bands - red zone and yellow zone */}
-            <ReferenceArea y1={0} y2={25} fill="#fef2f2" fillOpacity={0.8} />
-            <ReferenceArea y1={25} y2={30} fill="#fefce8" fillOpacity={0.8} />
-            <XAxis dataKey="t" tick={{ fontSize: 11 }} stroke="#78716c" />
-            <YAxis domain={[0, 60]} tick={{ fontSize: 11 }} stroke="#78716c" />
+            <ReferenceArea y1={0} y2={25} fill="#fde2dd" fillOpacity={0.65} />
+            <ReferenceArea y1={25} y2={30} fill="#fff4d6" fillOpacity={0.65} />
+            <CartesianGrid stroke="#f0e7db" vertical={false} />
+            <XAxis
+              dataKey="t"
+              tickFormatter={formatTick}
+              tick={{ fontSize: 11, fill: '#6b5f52' }}
+              stroke="#d7c9b6"
+              tickLine={false}
+              interval="preserveStartEnd"
+              minTickGap={32}
+            />
+            <YAxis domain={[0, 60]} tick={{ fontSize: 11, fill: '#6b5f52' }} stroke="#d7c9b6" tickLine={false} />
             <Tooltip
+              labelFormatter={formatTick}
               contentStyle={{
                 borderRadius: '8px',
-                border: '2px solid #e7e5e4',
+                border: '2px solid #f0e5d8',
                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
               }}
             />
-            <Legend />
+            <Legend
+              wrapperStyle={{ paddingTop: 12 }}
+              formatter={(value) => <span style={{ color: '#5f4f3f' }}>{value}</span>}
+            />
             {visibleSeries.map(s => (
               <Line
                 key={s.key}

@@ -1,6 +1,43 @@
-import { useFarms } from '@/api/hooks';
+import { Link } from 'react-router-dom';
+import { useFarms, useDevices, useAttention, Farm, Device } from '@/api/hooks';
 import { FarmCard } from '@/components/FarmCard';
 import { FarmOverviewMap } from '@/components/FarmOverviewMap';
+
+const MOCK_FARMS: Farm[] = [
+  {
+    id: 'test-farm',
+    name: 'Test Field',
+    device_count: 4,
+    status: 'green',
+    attention_count: 1,
+    last_reading: '27 days ago',
+    last_reading_at: null,
+    lat: -23.5505,
+    lon: -46.6333,
+  },
+  {
+    id: 'cerrado-south',
+    name: 'Cerrado South',
+    device_count: 3,
+    status: 'amber',
+    attention_count: 2,
+    last_reading: '12 hours ago',
+    last_reading_at: null,
+    lat: -22.9035,
+    lon: -47.0596,
+  },
+  {
+    id: 'valley-demo',
+    name: 'Valley Demo',
+    device_count: 5,
+    status: 'red',
+    attention_count: 3,
+    last_reading: '2 hours ago',
+    last_reading_at: null,
+    lat: -21.1704,
+    lon: -47.8103,
+  },
+];
 
 function LoadingSkeleton() {
   return (
@@ -15,50 +52,100 @@ function LoadingSkeleton() {
   );
 }
 
+function deriveFarmFromDevices(devices: Device[], attentionCount: number): Farm | null {
+  if (!devices.length) return null;
+  const withLocation = devices.filter(d => d.lat != null && d.lon != null);
+  const avgLat = withLocation.length ? withLocation.reduce((sum, d) => sum + (d.lat || 0), 0) / withLocation.length : null;
+  const avgLon = withLocation.length ? withLocation.reduce((sum, d) => sum + (d.lon || 0), 0) / withLocation.length : null;
+
+  const status =
+    attentionCount > 0
+      ? 'amber'
+      : devices.some(d => d.status === 'red')
+        ? 'red'
+        : devices.some(d => d.status === 'blue')
+          ? 'blue'
+          : 'green';
+
+  return {
+    id: 'test-farm',
+    name: 'Test Field',
+    device_count: devices.length,
+    status,
+    attention_count: attentionCount,
+    last_reading: devices[0]?.last_seen ?? 'Just now',
+    last_reading_at: devices[0]?.last_seen ?? null,
+    lat: avgLat,
+    lon: avgLon,
+  };
+}
+
 export default function LandingPage() {
   const { data: farms = [], isLoading } = useFarms();
+  const { data: devices = [] } = useDevices();
+  const { data: attention = [] } = useAttention();
+
+  const derivedFarm = deriveFarmFromDevices(devices, attention.length);
+  const hasApiFarms = farms.length > 0;
+  const showSample = !hasApiFarms && !derivedFarm;
+  const displayFarms = hasApiFarms ? farms : derivedFarm ? [derivedFarm] : MOCK_FARMS;
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* Header with logo */}
-        <div className="flex items-center justify-center mb-8">
-          <img
-            src="/BRSense_logo.png"
-            alt="BRSense"
-            className="h-14 w-auto"
-          />
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#fdfaf3,_#f6f1e5_55%,_#efe3d1)]">
+      <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+        <div className="rounded-3xl border border-[#eadfcf] bg-gradient-to-br from-[#fdfaf3] via-[#eef3ee] to-[#ffffff] p-6 md:p-8 shadow-[0_20px_60px_rgba(31,106,78,0.12)]">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <Link to="/readings" className="group" aria-label="Back to dashboard">
+              <img
+                src="/BRSense_logo.png"
+                alt="BRSense logo"
+                className="h-40 w-auto drop-shadow-2xl transition-transform duration-200 group-hover:scale-[1.05]"
+              />
+            </Link>
+            <div>
+              <p className="text-xs uppercase tracking-[0.5em] text-[#b28428] font-semibold mb-2">
+                Network overview
+              </p>
+              <h1 className="text-3xl font-semibold text-[#1f6a4e] leading-tight">Fields & Fleet Health</h1>
+              <p className="text-sm text-[#b28428] mt-1">
+                Live telemetry and device health for every field.
+              </p>
+            </div>
+          </div>
         </div>
 
         {isLoading ? (
           <LoadingSkeleton />
-        ) : farms.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-stone-500 text-lg mb-2">No farms registered yet</div>
-            <div className="text-stone-400 text-sm">
-              Devices will be grouped by field when they start reporting
-            </div>
-          </div>
         ) : (
           <>
-            {/* Overview Map */}
-            <div className="mb-8">
-              <h2 className="text-lg font-semibold text-stone-700 mb-3">Farm Locations</h2>
-              <FarmOverviewMap farms={farms} />
-            </div>
+            <div className="space-y-8">
+              {showSample && (
+                <div className="rounded-2xl border border-dashed border-[#d4c6b4] bg-white/80 px-4 py-3 text-sm text-[#5b5044] text-center">
+                  No farm data yet – showing sample layout. Replay the captured test messages or seed data to see live farms.
+                </div>
+              )}
 
-            {/* Farm Cards Grid */}
-            <div>
-              <h2 className="text-lg font-semibold text-stone-700 mb-3">
-                Your Farms
-                <span className="ml-2 text-sm font-normal text-stone-500">
-                  ({farms.length} total)
-                </span>
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {farms.map(farm => (
-                  <FarmCard key={farm.id} farm={farm} />
-                ))}
+              {/* Overview Map */}
+              <div className="space-y-3">
+                <h2 className="text-sm uppercase tracking-[0.4em] text-[#b28428] font-semibold">Field Locations</h2>
+                <div className="border border-[#eadfcf] rounded-3xl overflow-hidden shadow-sm bg-white/80">
+                  <FarmOverviewMap farms={displayFarms} />
+                </div>
+              </div>
+
+              {/* Field Cards Grid */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm uppercase tracking-[0.35em] text-[#1f6a4e] font-semibold">Fields</h2>
+                  <span className="text-sm font-normal text-stone-500">
+                    ({displayFarms.length} total)
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {displayFarms.map(farm => (
+                    <FarmCard key={farm.id} farm={farm} />
+                  ))}
+                </div>
               </div>
             </div>
           </>

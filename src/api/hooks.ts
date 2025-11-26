@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { api } from './client';
+import { API_BASE, api } from './client';
 
 export type DeviceStatus = 'red' | 'amber' | 'green' | 'blue' | 'stale' | 'offline' | 'gray';
 
@@ -104,7 +104,19 @@ export function useDevices(farmId?: string) {
 export function useFarms() {
   return useQuery<Farm[]>({
     queryKey: ['farms'],
-    queryFn: () => api('/v1/farms')
+    queryFn: async () => {
+      const url = new URL('/v1/farms', API_BASE);
+      const res = await fetch(url.toString());
+      if (res.status === 404) {
+        return [];
+      }
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+      return res.json();
+    },
+    staleTime: 60000,
+    retry: 0,
   });
 }
 

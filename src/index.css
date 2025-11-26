@@ -3,43 +3,40 @@
 @tailwind utilities;
 
 :root {
-  /* Earthy color palette */
-  --color-earth-50: #faf9f6;
-  --color-earth-100: #f5f3ef;
-  --color-earth-200: #e8e4dc;
-  --color-earth-300: #d4cdc0;
-  --color-earth-400: #a39785;
-  --color-earth-500: #786a54;
-  --color-earth-600: #5c4f3d;
-  --color-earth-700: #463d30;
-  --color-earth-800: #352e25;
-  --color-earth-900: #261f19;
+  --brand-forest: #1f6a4e;
+  --brand-fern: #2f8f5b;
+  --brand-amber: #b28428;
+  --brand-cream: #f6f4ee;
+  --brand-ivory: #fdfcf7;
+  --brand-sage: #dfe8d9;
+  --brand-sand: #e6d8c3;
+  --brand-clay: #c7b39a;
+  --brand-slate: #2a2520;
 }
 
 body {
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: #faf9f7;
-  color: #1c1917;
+  background: linear-gradient(180deg, var(--brand-cream) 0%, var(--brand-ivory) 60%, var(--brand-cream) 100%);
+  color: var(--brand-slate);
+  font-size: 17px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* High contrast text for field readability */
 h1, h2, h3, h4, h5, h6 {
-  color: #1c1917;
+  color: var(--brand-slate);
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
-/* Large touch targets for mobile/field use */
 button, a, [role="button"] {
   min-height: 44px;
   min-width: 44px;
 }
 
-/* Button hover states */
 button:focus-visible, a:focus-visible {
-  outline: 2px solid #059669;
+  outline: 2px solid var(--brand-fern);
   outline-offset: 2px;
 }
 
@@ -49,17 +46,17 @@ button:focus-visible, a:focus-visible {
 }
 
 .overflow-y-auto::-webkit-scrollbar-track {
-  background: #f5f3ef;
+  background: var(--brand-cream);
   border-radius: 4px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb {
-  background: #d4cdc0;
+  background: var(--brand-sand);
   border-radius: 4px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: #a39785;
+  background: var(--brand-clay);
 }
 
 /* Map marker styles */
@@ -85,7 +82,7 @@ button:focus-visible, a:focus-visible {
 
 .recharts-legend-item-text {
   font-size: 12px !important;
-  color: #44403c !important;
+  color: #5f4f3f !important;
 }
 
 /* Status indicator animations */

@@ -1,4 +1,4 @@
-import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useSearchParams } from 'react-router-dom';
 import { presetToRange } from '@/lib/time';
 import { TempSeries, useTempSeries } from '@/api/hooks';
@@ -35,7 +35,7 @@ export function TemperatureChart({ q }: { q: any }) {
 
     series.points.forEach((point) => {
       if (!timeMap.has(point.t)) {
-        timeMap.set(point.t, { t: new Date(point.t).toLocaleString() });
+        timeMap.set(point.t, { t: point.t });
       }
       timeMap.get(point.t)[key] = point.v;
     });
@@ -47,8 +47,11 @@ export function TemperatureChart({ q }: { q: any }) {
 
   const visibleSeries = seriesMeta.slice(0, 8);
 
+  const formatTick = (value: string) =>
+    new Date(value).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+
   return (
-    <div className="border-2 border-stone-200 rounded-xl p-4 bg-white">
+    <div className="border border-[#ede2d3] rounded-2xl p-5 bg-white/95 shadow-sm">
       <h3 className="font-semibold text-stone-800 text-lg mb-4">Soil Temperature</h3>
 
       {/* Depth selector */}
@@ -97,16 +100,29 @@ export function TemperatureChart({ q }: { q: any }) {
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows}>
-            <XAxis dataKey="t" tick={{ fontSize: 11 }} stroke="#78716c" />
-            <YAxis domain={[10, 40]} tick={{ fontSize: 11 }} stroke="#78716c" />
+            <CartesianGrid stroke="#f0e7db" vertical={false} />
+            <XAxis
+              dataKey="t"
+              tickFormatter={formatTick}
+              tick={{ fontSize: 11, fill: '#6b5f52' }}
+              stroke="#d7c9b6"
+              tickLine={false}
+              interval="preserveStartEnd"
+              minTickGap={32}
+            />
+            <YAxis domain={[10, 40]} tick={{ fontSize: 11, fill: '#6b5f52' }} stroke="#d7c9b6" tickLine={false} />
             <Tooltip
+              labelFormatter={formatTick}
               contentStyle={{
                 borderRadius: '8px',
-                border: '2px solid #e7e5e4',
+                border: '2px solid #f0e5d8',
                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
               }}
             />
-            <Legend />
+            <Legend
+              wrapperStyle={{ paddingTop: 12 }}
+              formatter={(value) => <span style={{ color: '#5f4f3f' }}>{value}</span>}
+            />
             {visibleSeries.map(s => (
               <Line
                 key={s.key}
