@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -261,8 +261,6 @@ function DeviceList({ devices, onSelect, selectedId }: {
 export default function FarmDetailPage() {
   const { farmId } = useParams<{ farmId: string }>();
   const [sp, setSp] = useSearchParams();
-  const [activeChart, setActiveChart] = useState<'moisture' | 'temperature'>('moisture');
-
   // Initialize default time range
   useEffect(() => {
     if (!sp.get('preset') && !sp.get('from')) {
@@ -390,12 +388,9 @@ export default function FarmDetailPage() {
           </div>
 
           {/* Charts */}
-          <div className="md:col-span-2">
-            {activeChart === 'moisture' ? (
-              <MoistureChart q={q} onToggle={() => setActiveChart('temperature')} />
-            ) : (
-              <TemperatureChart q={q} onToggle={() => setActiveChart('moisture')} />
-            )}
+          <div className="md:col-span-2 space-y-4">
+            <MoistureChart q={q} />
+            <TemperatureChart q={q} />
           </div>
         </div>
       </div>
