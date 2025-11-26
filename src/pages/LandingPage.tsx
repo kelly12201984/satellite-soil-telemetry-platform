@@ -92,22 +92,22 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#fdfaf3,_#f6f1e5_55%,_#efe3d1)]">
-      <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-        <div className="rounded-3xl border border-[#eadfcf] bg-gradient-to-br from-[#fdfaf3] via-[#eef3ee] to-[#ffffff] p-6 md:p-8 shadow-[0_20px_60px_rgba(31,106,78,0.12)]">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+      <div className="px-6 lg:px-10 py-8 space-y-10">
+        <div className="w-full rounded-3xl border border-[#eadfcf] bg-gradient-to-r from-[#fdfaf3] via-[#eef3ee] to-[#ffffff] p-8 shadow-[0_25px_70px_rgba(31,106,78,0.12)]">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <Link to="/readings" className="group" aria-label="Back to dashboard">
               <img
                 src="/BRSense_logo.png"
                 alt="BRSense logo"
-                className="h-40 w-auto drop-shadow-2xl transition-transform duration-200 group-hover:scale-[1.05]"
+                className="h-48 w-auto drop-shadow-2xl transition-transform duration-200 group-hover:scale-[1.05]"
               />
             </Link>
             <div>
-              <p className="text-xs uppercase tracking-[0.5em] text-[#b28428] font-semibold mb-2">
+              <p className="text-sm uppercase tracking-[0.55em] text-[#b28428] font-semibold mb-3">
                 Network overview
               </p>
-              <h1 className="text-3xl font-semibold text-[#1f6a4e] leading-tight">Fields & Fleet Health</h1>
-              <p className="text-sm text-[#b28428] mt-1">
+              <h1 className="text-4xl lg:text-5xl font-semibold text-[#1f6a4e] leading-tight">Fields & Fleet Health</h1>
+              <p className="text-lg text-[#b28428] mt-2">
                 Live telemetry and device health for every field.
               </p>
             </div>
@@ -125,26 +125,26 @@ export default function LandingPage() {
                 </div>
               )}
 
-              {/* Overview Map */}
-              <div className="space-y-3">
-                <h2 className="text-sm uppercase tracking-[0.4em] text-[#b28428] font-semibold">Field Locations</h2>
-                <div className="border border-[#eadfcf] rounded-3xl overflow-hidden shadow-sm bg-white/80">
-                  <FarmOverviewMap farms={displayFarms} />
+              <div className="grid gap-6 lg:grid-cols-5 items-start">
+                <div className="lg:col-span-3 space-y-3">
+                  <h2 className="text-sm uppercase tracking-[0.4em] text-[#b28428] font-semibold">Field Locations</h2>
+                  <div className="border border-[#eadfcf] rounded-3xl overflow-hidden shadow-sm bg-white/80 min-h-[420px]">
+                    <FarmOverviewMap farms={displayFarms} />
+                  </div>
                 </div>
-              </div>
 
-              {/* Field Cards Grid */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm uppercase tracking-[0.35em] text-[#1f6a4e] font-semibold">Fields</h2>
-                  <span className="text-sm font-normal text-stone-500">
-                    ({displayFarms.length} total)
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {displayFarms.map(farm => (
-                    <FarmCard key={farm.id} farm={farm} />
-                  ))}
+                <div className="lg:col-span-2 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-sm uppercase tracking-[0.35em] text-[#1f6a4e] font-semibold">Fields</h2>
+                    <span className="text-sm font-normal text-stone-500">
+                      ({displayFarms.length} total)
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    {displayFarms.map(farm => (
+                      <FarmCard key={farm.id} farm={farm} />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
