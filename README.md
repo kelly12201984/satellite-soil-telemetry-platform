@@ -154,6 +154,7 @@ See `DEPLOYMENT_CHECKLIST.md` for detailed deployment procedures.
 
 ### Telemetry Ingestion
 - `POST /v1/uplink/receive` - Receive satellite telemetry (Globalstar webhook)
+- `POST /v1/uplink/confirmation` - Provisioning/activation confirmations (Globalstar B4.3)
 
 ### Metrics & Analytics
 - `GET /v1/metrics/summary` - Summary KPIs (avg moisture, temp, device counts)

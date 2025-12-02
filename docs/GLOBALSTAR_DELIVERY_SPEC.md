@@ -7,11 +7,14 @@ This document contains only the parameters Globalstar needs to configure HTTPS d
 
 ---
 
-## 1. HTTPS Destination
+## 1. HTTPS Destinations
 
-- **URL (Webhook Endpoint):** `https://api.soilreadings.com/v1/uplink/receive`
-- **Method:** `POST`
-- **Protocol:** `HTTPS` only (TLS enforced)
+| Purpose | Form reference | URL | Method |
+| --- | --- | --- | --- |
+| Telemetry uplink | **B2.3** | `https://api.soilreadings.com/v1/uplink/receive` | `POST` |
+| Provisioning confirmation | **B4.3** | `https://api.soilreadings.com/v1/uplink/confirmation` | `POST` |
+
+Both endpoints require HTTPS (TLS).
 
 ---
 
@@ -88,7 +91,17 @@ Also supported for testing or API integration:
 
 ## 4. Expected Responses
 
-- **200 OK** on success. Example body:
+- **200 OK** on success. Example body (uplink endpoint):
+- Provisioning confirmation endpoint (`/v1/uplink/confirmation`) returns:
+
+```json
+{
+  "status": "ok",
+  "type": "provisioning_confirmation",
+  "esn": "0-99990",
+  "ack": true
+}
+```
 
 ```json
 {

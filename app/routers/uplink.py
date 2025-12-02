@@ -1,4 +1,5 @@
 # api/app/routers/uplink.py
+import logging
 from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.orm import Session
 from app.db.session import get_db
@@ -15,6 +16,8 @@ GLOBALSTAR_IPS = {
     "3.135.136.171",
     "3.133.245.206",
 }
+
+log = logging.getLogger("soilprobe.uplink")
 
 def _get_client_ip(request: Request) -> str:
     """Get real client IP, accounting for Cloudflare and proxies."""
@@ -51,18 +54,61 @@ def _require_token(request: Request):
             detail=f"Invalid or missing uplink token (source IP: {client_ip})"
         )
 
+def _parse_payload(raw: bytes, content_type: str):
+    if not raw:
+        raise HTTPException(status_code=400, detail="Empty body")
+    ctype = (content_type or "").lower()
+    try:
+        if "xml" in ctype or raw.strip().startswith(b"<"):
+            return xmltodict.parse(raw)
+        return json.loads(raw.decode("utf-8"))
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Bad payload: {exc}")
+
 @router.post("/receive")
 async def receive_uplink(request: Request, db: Session = Depends(get_db)):
     _require_token(request)
 
     raw = await request.body()
-    ctype = request.headers.get("content-type", "").lower()
-    try:
-        if "xml" in ctype or raw.strip().startswith(b"<"):
-            payload = xmltodict.parse(raw)
-        else:
-            payload = json.loads(raw.decode("utf-8"))
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Bad payload: {e}")
+    payload = _parse_payload(raw, request.headers.get("content-type", ""))
 
     return ingest_envelope(payload, db)
+
+
+@router.post("/confirmation")
+async def provisioning_confirmation(request: Request):
+    """
+    Confirmation endpoint (Globalstar form B4.3).
+    Accepts XML or JSON payloads indicating provisioning/activation events.
+    """
+    _require_token(request)
+    raw = await request.body()
+    payload = _parse_payload(raw, request.headers.get("content-type", ""))
+
+    esn = None
+    if isinstance(payload, dict):
+        # attempt to pull ESN/Device identifier for logging
+        for key in ("esn", "ESN", "device_esn", "deviceId"):
+            if key in payload:
+                esn = payload[key]
+                break
+        if not esn:
+            # look deeper if Globalstar style envelope
+            if isinstance(payload.get("stuMessage"), dict):
+                esn = payload["stuMessage"].get("esn")
+            elif isinstance(payload.get("stuMessages"), dict):
+                inner = payload["stuMessages"].get("stuMessage")
+                if isinstance(inner, dict):
+                    esn = inner.get("esn")
+
+    log.info(
+        "Received provisioning confirmation",
+        extra={"esn": esn, "payload_preview": str(payload)[:500]},
+    )
+
+    return {
+        "status": "ok",
+        "type": "provisioning_confirmation",
+        "esn": esn,
+        "ack": True,
+    }
