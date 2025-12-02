@@ -74,12 +74,18 @@ API will be available at `http://localhost:8000`
 ### Frontend Setup
 
 ```bash
-cd web
+# From repo root
 npm install
 npm run dev
 ```
 
-Frontend will be available at `http://localhost:5173`
+Vite will start on the first free port (default `http://localhost:5173`).  
+To build the production bundle that FastAPI serves from `/readings`, run:
+
+```bash
+npm run build
+# outputs to app/static/ui
+```
 
 ### Local Database (Docker)
 
@@ -176,7 +182,6 @@ curl http://localhost:8000/v1/devices
 - [Globalstar Integration Spec](./docs/GLOBALSTAR_DELIVERY_SPEC.md) - API specification for satellite device integration
 - [Deployment Checklist](./docs/DEPLOYMENT_CHECKLIST.md) - Step-by-step deployment guide
 - [Update Guide](./docs/UPDATE_GUIDE.md) - How to deploy updates and handle migrations
-- [Frontend README](./web/README.md) - Frontend development guide
 
 ## 🔧 Database Migrations
 
@@ -217,12 +222,10 @@ soilprobe-platform/
 │   │   └── db/          # Database session management
 │   ├── alembic/         # Database migrations
 │   └── Dockerfile       # Production container
-├── web/                 # React frontend
-│   ├── src/
-│   │   ├── components/  # React components
-│   │   ├── pages/       # Page components
-│   │   └── api/         # API client & hooks
-│   └── vite.config.ts   # Build configuration
+├── src/                 # React frontend
+│   ├── components/      # React components
+│   ├── pages/           # Page components
+│   └── api/             # API client & hooks
 ├── infra/               # Infrastructure as Code
 │   └── terraform/       # Terraform modules
 ├── scripts/             # Utility scripts
