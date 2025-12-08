@@ -91,18 +91,27 @@ Also supported for testing or API integration:
 
 ## 4. Expected Responses
 
-- **200 OK** on success. Example body (uplink endpoint):
-- Provisioning confirmation endpoint (`/v1/uplink/confirmation`) returns:
+Responses are returned in the **same format as the request**:
+- XML requests receive XML responses
+- JSON requests receive JSON responses
 
-```json
-{
-  "status": "ok",
-  "type": "provisioning_confirmation",
-  "esn": "0-99990",
-  "ack": true
-}
+### Uplink Endpoint (`/v1/uplink/receive`)
+
+**XML Response** (when sending XML):
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<response>
+  <device_id>1</device_id>
+  <message_id>42</message_id>
+  <totals>
+    <devices>1</devices>
+    <messages>64</messages>
+    <readings>64</readings>
+  </totals>
+</response>
 ```
 
+**JSON Response** (when sending JSON):
 ```json
 {
   "device_id": 1,
@@ -112,6 +121,29 @@ Also supported for testing or API integration:
     "messages": 64,
     "readings": 64
   }
+}
+```
+
+### Provisioning Confirmation Endpoint (`/v1/uplink/confirmation`)
+
+**XML Response** (when sending XML):
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<response>
+  <status>ok</status>
+  <type>provisioning_confirmation</type>
+  <esn>0-99990</esn>
+  <ack>true</ack>
+</response>
+```
+
+**JSON Response** (when sending JSON):
+```json
+{
+  "status": "ok",
+  "type": "provisioning_confirmation",
+  "esn": "0-99990",
+  "ack": true
 }
 ```
 
@@ -156,6 +188,12 @@ curl -X POST https://api.soilreadings.com/v1/uplink/receive \
   -d '<stuMessages><stuMessage><esn>TEST-001</esn><payload>0200000000000000</payload></stuMessage></stuMessages>'
 ```
 
+Expected XML response:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<response><device_id>X</device_id><message_id>Y</message_id><totals>...</totals></response>
+```
+
 Or using JSON for testing:
 
 ```bash
@@ -173,7 +211,7 @@ curl -X POST https://api.soilreadings.com/v1/uplink/receive \
   }'
 ```
 
-Expected response: `{"device_id":X,"message_id":Y,"totals":{...}}`
+Expected JSON response: `{"device_id":X,"message_id":Y,"totals":{...}}`
 
 ### Health Check
 
