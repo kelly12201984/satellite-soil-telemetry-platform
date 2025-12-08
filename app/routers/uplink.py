@@ -1,6 +1,6 @@
 # api/app/routers/uplink.py
 import logging
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Request, HTTPException, Response
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.services.ingest_min import ingest_envelope
@@ -54,6 +54,12 @@ def _require_token(request: Request):
             detail=f"Invalid or missing uplink token (source IP: {client_ip})"
         )
 
+def _is_xml_request(raw: bytes, content_type: str) -> bool:
+    """Check if the incoming request is XML format."""
+    ctype = (content_type or "").lower()
+    return "xml" in ctype or raw.strip().startswith(b"<")
+
+
 def _parse_payload(raw: bytes, content_type: str):
     if not raw:
         raise HTTPException(status_code=400, detail="Empty body")
@@ -65,14 +71,31 @@ def _parse_payload(raw: bytes, content_type: str):
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Bad payload: {exc}")
 
+
+def _make_response(data: dict, is_xml: bool) -> Response:
+    """
+    Return response in the same format as the request.
+    XML requests get XML responses, JSON requests get JSON responses.
+    """
+    if is_xml:
+        xml_content = xmltodict.unparse({"response": data}, pretty=True)
+        return Response(content=xml_content, media_type="application/xml")
+    return Response(
+        content=json.dumps(data),
+        media_type="application/json"
+    )
+
 @router.post("/receive")
 async def receive_uplink(request: Request, db: Session = Depends(get_db)):
     _require_token(request)
 
     raw = await request.body()
-    payload = _parse_payload(raw, request.headers.get("content-type", ""))
+    content_type = request.headers.get("content-type", "")
+    is_xml = _is_xml_request(raw, content_type)
+    payload = _parse_payload(raw, content_type)
 
-    return ingest_envelope(payload, db)
+    result = ingest_envelope(payload, db)
+    return _make_response(result, is_xml)
 
 
 @router.post("/confirmation")
@@ -80,10 +103,13 @@ async def provisioning_confirmation(request: Request):
     """
     Confirmation endpoint (Globalstar form B4.3).
     Accepts XML or JSON payloads indicating provisioning/activation events.
+    Returns response in the same format as the request (XML or JSON).
     """
     _require_token(request)
     raw = await request.body()
-    payload = _parse_payload(raw, request.headers.get("content-type", ""))
+    content_type = request.headers.get("content-type", "")
+    is_xml = _is_xml_request(raw, content_type)
+    payload = _parse_payload(raw, content_type)
 
     esn = None
     if isinstance(payload, dict):
@@ -106,9 +132,10 @@ async def provisioning_confirmation(request: Request):
         extra={"esn": esn, "payload_preview": str(payload)[:500]},
     )
 
-    return {
+    result = {
         "status": "ok",
         "type": "provisioning_confirmation",
         "esn": esn,
         "ack": True,
     }
+    return _make_response(result, is_xml)
